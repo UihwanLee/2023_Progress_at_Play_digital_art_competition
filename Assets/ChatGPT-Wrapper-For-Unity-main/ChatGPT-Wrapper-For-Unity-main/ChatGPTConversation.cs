@@ -83,19 +83,23 @@ namespace ChatGPTWrapper {
         public void SendToChatGPT(TextMeshProUGUI GUImessage)
         {
             string message = GUImessage.text;
+
             _lastUserMsg = message;
 
-            if (_model == Model.ChatGPT) {
+            if (_model == Model.ChatGPT)
+            {
                 _chat.AppendMessage(Chat.Speaker.User, message);
 
                 ChatGPTReq reqObj = new ChatGPTReq();
                 reqObj.model = _selectedModel;
                 reqObj.messages = _chat.CurrentChat;
-        
+
                 string json = JsonUtility.ToJson(reqObj);
 
                 StartCoroutine(requests.PostReq<ChatGPTRes>(_uri, json, ResolveChatGPT, _reqHeaders));
-            } else {
+            }
+            else
+            {
                 _prompt.AppendText(Prompt.Speaker.User, message);
 
                 GPTReq reqObj = new GPTReq();

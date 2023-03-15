@@ -15,6 +15,6 @@ public class Send : MonoBehaviour
 
     public void sendMessage(TextMeshProUGUI _message)
     {
-        chatGPT.SendToChatGPT(_message);
+        //chatGPT.SendToChatGPT(_message);
     }
 }
