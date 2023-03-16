@@ -81,11 +81,14 @@ public class PlayerController : MonoBehaviour
             {
                 // 스테이즈 들어가고 나서도 점프할 수 있게 해줘야함
                 // 스테이즈 체크 
-                if(isStageOn && stageManager.GetCurStageName() != null)
+                if (isStageOn && stageManager.GetCurStageName() != null)
                 {
                     sceneManager.LoadStage();
                 }
-                else rb.velocity = Vector2.up * jumpForce;
+                else
+                {
+                    rb.velocity = Vector2.up * jumpForce;
+                }
             }
 
             if (rb.velocity.y < 0)

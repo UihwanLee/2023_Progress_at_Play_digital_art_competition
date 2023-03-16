@@ -15,6 +15,8 @@ public class StageManager : MonoBehaviour
     // Scipts
     [SerializeField]
     private PlayerController player;
+    [SerializeField]
+    private CameraController cameraController;
 
     // 싱글톤으로 관리
 
@@ -33,6 +35,7 @@ public class StageManager : MonoBehaviour
             case "Global Warmming":
                 // 로딩 장면 + ChatGPT 설명 + PlayerPos 이동
                 player.MovePlayerPos(stage1SpawnPos);
+                cameraController.MoveCamera(stage1SpawnPos);
                 break;
             case "Inflaction":
                 break;
