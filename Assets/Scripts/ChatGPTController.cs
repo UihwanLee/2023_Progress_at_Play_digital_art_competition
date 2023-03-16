@@ -26,6 +26,10 @@ public class ChatGPTController : MonoBehaviour
 
     private bool isMoveable;
 
+    // SendMessageObject
+    [SerializeField]
+    private GameObject sendMessageInputField;
+
     // WaitForASecond
     [SerializeField]
     private GameObject waitForASecond;
@@ -106,7 +110,7 @@ public class ChatGPTController : MonoBehaviour
             }
         }
 
-        sendMessage.GetComponent<TextMeshProUGUI>().text = "";
+        //sendMessage.GetComponent<TextMeshProUGUI>().text = "";
         //Debug.Log(sendMessage.GetComponent<TextMeshProUGUI>().text);
     }
 
@@ -120,12 +124,12 @@ public class ChatGPTController : MonoBehaviour
 
             // 받은 메세지 크기에 따라 문단 나누고
             // (선택사항) 말풍선크기도 바꿔주기
-            StartCoroutine(_typing(_message));
+            StartCoroutine(TypingCoroutine(_message));
             //responseMessage.text = _message;
         }
     }
 
-    IEnumerator _typing(string _text)
+    IEnumerator TypingCoroutine(string _text)
     {
         responseMessage.GetComponent<TextMeshProUGUI>().text = "";
         float textHeight;
@@ -155,9 +159,11 @@ public class ChatGPTController : MonoBehaviour
         isResponsing = false;
     }
 
-    public void ActiveMessage()
+    // 현재 타이핑하고 있는지 판단하는 함수
+    public bool IsTyping()
     {
-        responseUI.SetActive(true);
+        if (sendMessageInputField.GetComponent<TMP_InputField>().isFocused) return true;
+        else return false;
     }
 
     public void OnCreate()

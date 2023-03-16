@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     private bool isMoveable;
 
     [SerializeField]
-    private float speed = 10.0f;
+    private float speed = 0.2f;
     private float smooting = 0.1f;
     private float targetPosX;
 
@@ -27,9 +27,21 @@ public class PlayerController : MonoBehaviour
     private float fallMultiplier = 2.5f; // The multiplier for the player's falling velocity
     private float lowJumpMultiplier = 2f;
 
+    // Stage 변수
+    private bool isStageOn;
+    private string curStageName;
+
     [SerializeField]
     private bool isGround;
 
+    [SerializeField]
+    private GameObject chatGPTController;
+
+    // Scripts
+    [SerializeField]
+    private StageManager stageManager;
+    [SerializeField]
+    private ScenenManager sceneManager;
 
 
     // Start is called before the first frame update
@@ -38,7 +50,10 @@ public class PlayerController : MonoBehaviour
         this.rb = GetComponent<Rigidbody2D>();
         isMoveable = true;
 
-        targetPosX = transform.position.x;
+        isStageOn = false;
+        curStageName = null;
+
+        targetPosX = transform.position.x; 
     }
 
     // Update is called once per frame
@@ -50,14 +65,27 @@ public class PlayerController : MonoBehaviour
     // 이동 체크 함수
     private void CheckMovement()
     {
-        if(isMoveable)
+        bool isTyping = chatGPTController.GetComponent<ChatGPTController>().IsTyping();
+        bool isLoading = sceneManager.isLoading();
+
+
+        // i) 움직일 수 있을 때
+        // i) 타이핑 중이 아닐때
+        // i) 로딩 중이 아닐 때
+        if (isMoveable && !isTyping && !isLoading)
         {
             //bool isMove = false;
 
             // 점프
             if ((Input.GetKeyDown(KeyCode.Space) && isGround))
             {
-                rb.velocity = Vector2.up * jumpForce;
+                // 스테이즈 들어가고 나서도 점프할 수 있게 해줘야함
+                // 스테이즈 체크 
+                if(isStageOn && stageManager.GetCurStageName() != null)
+                {
+                    sceneManager.LoadStage();
+                }
+                else rb.velocity = Vector2.up * jumpForce;
             }
 
             if (rb.velocity.y < 0)
@@ -88,6 +116,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void MovePlayerPos(Vector3 _Pos) { transform.position = _Pos; targetPosX = transform.position.x; }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Ground") isGround = true;
@@ -96,5 +126,23 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Ground") isGround = false;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Stage")
+        {
+            isStageOn = true;
+            stageManager.SetCurStageName(collision.gameObject.name);
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Stage")
+        {
+            isStageOn = false;
+            stageManager.SetCurStageName(null);
+        }
     }
 }

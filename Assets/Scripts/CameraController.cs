@@ -11,6 +11,11 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        LobbyMode();
+    }
+
+    private void LobbyMode()
+    {
         float playerPosX = this.player.transform.position.x + 1f;
         transform.position = new Vector3(playerPosX, transform.position.y, transform.position.z);
     }
