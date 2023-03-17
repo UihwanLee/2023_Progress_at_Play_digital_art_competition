@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
 {
     // Player 변수
     private Rigidbody2D rb;
+    private HingeJoint2D hj;
 
     [SerializeField]
     private float characterSize = 1.35f;
@@ -31,8 +32,19 @@ public class PlayerController : MonoBehaviour
     private bool isStageOn;
     private string curStageName;
 
+    // 상태 변수
     [SerializeField]
     private bool isGround;
+
+    // Rope 변수
+    private bool isRopeAttached;
+    private bool isClimbing;
+    private Transform attachedTo;
+    private Rigidbody2D curAttachedRope;
+    private float pushForce = 10f;
+
+    private GameObject disregard;
+    public GameObject pulleySelected = null;
 
     [SerializeField]
     private GameObject chatGPTController;
@@ -42,16 +54,27 @@ public class PlayerController : MonoBehaviour
     private StageManager stageManager;
     [SerializeField]
     private ScenenManager sceneManager;
+    [SerializeField]
+    private RopeManager ropeManager;
 
 
     // Start is called before the first frame update
     void Start()
     {
         this.rb = GetComponent<Rigidbody2D>();
+        this.hj = GetComponent<HingeJoint2D>();
+        hj.enabled = false;
         isMoveable = true;
 
         isStageOn = false;
         curStageName = null;
+
+        isGround = false;
+        isClimbing = false;
+        isRopeAttached = false;
+        attachedTo = null;
+
+        curAttachedRope = null;
 
         targetPosX = transform.position.x; 
     }
@@ -60,6 +83,7 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         CheckMovement();
+        CheckClimbing();
     }
 
     // 이동 체크 함수
@@ -68,11 +92,11 @@ public class PlayerController : MonoBehaviour
         bool isTyping = chatGPTController.GetComponent<ChatGPTController>().IsTyping();
         bool isLoading = sceneManager.isLoading();
 
-
         // i) 움직일 수 있을 때
         // i) 타이핑 중이 아닐때
         // i) 로딩 중이 아닐 때
-        if (isMoveable && !isTyping && !isLoading)
+        // i) 밧줄 잡는 중이 아닐 때
+        if (isMoveable && !isTyping && !isLoading && !isClimbing)
         {
             //bool isMove = false;
 
@@ -88,6 +112,14 @@ public class PlayerController : MonoBehaviour
                 else
                 {
                     rb.velocity = Vector2.up * jumpForce;
+                }
+            }
+
+            if((Input.GetKeyDown(KeyCode.UpArrow)))
+            {
+                if(isRopeAttached && curAttachedRope != null)
+                {
+                    AttachRope(curAttachedRope);
                 }
             }
 
@@ -116,10 +148,89 @@ public class PlayerController : MonoBehaviour
 
             float smoothPosX = Mathf.Lerp(transform.position.x, targetPosX, smooting);
             transform.position = new Vector3(smoothPosX, transform.position.y, transform.position.z);
+
+        }
+    }
+
+    private void CheckClimbing()
+    {
+        if (isClimbing)
+        {
+            if (Input.GetKey(KeyCode.RightArrow))
+            {
+                rb.AddRelativeForce(new Vector3(1, 0, 0) * pushForce);
+            }
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                rb.AddRelativeForce(new Vector3(-1, 0, 0) * pushForce);
+            }
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                Slide(1);
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                Slide(-1);
+            }
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                DetachRope();
+            }
+        }
+    }
+
+    private void AttachRope(Rigidbody2D rope)
+    {
+        rope.gameObject.GetComponent<RopeSegment>().isPlayerAttached = true;
+        hj.connectedBody = rope;
+        hj.enabled = true;
+        isClimbing = true;
+        attachedTo = rope.gameObject.transform.parent;
+    }
+
+    private void DetachRope()
+    {
+        hj.connectedBody.gameObject.GetComponent<RopeSegment>().isPlayerAttached = false;
+        isClimbing = false;
+        hj.enabled = false;
+        hj.connectedBody = null;
+    }
+
+    public void Slide(int dir)
+    {
+        RopeSegment connection = hj.connectedBody.gameObject.GetComponent<RopeSegment>();
+        GameObject newSeg = null;
+        if (dir > 0)
+        {
+            if (connection.connectedAbove != null)
+            {
+                if (connection.connectedAbove.gameObject.GetComponent<RopeSegment>() != null)
+                {
+                    newSeg = connection.connectedAbove;
+                }
+            }
+        }
+        else
+        {
+            if (connection.connectedBelow != null)
+            {
+                newSeg = connection.connectedBelow;
+            }
+        }
+
+        if (newSeg != null)
+        {
+            transform.position = newSeg.transform.position;
+            connection.isPlayerAttached = false;
+            newSeg.GetComponent<RopeSegment>().isPlayerAttached = true;
+            hj.connectedBody = newSeg.GetComponent<Rigidbody2D>();
         }
     }
 
     public void MovePlayerPos(Vector3 _Pos) { transform.position = _Pos; targetPosX = transform.position.x; }
+
+    public HingeJoint2D GetPlayerHingeJoint2D() { return hj; }
+    public void SetAttachTo(Transform trans) { attachedTo = trans; }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -138,6 +249,17 @@ public class PlayerController : MonoBehaviour
             isStageOn = true;
             stageManager.SetCurStageName(collision.gameObject.name);
         }
+        if(!isClimbing)
+        {
+            if(collision.gameObject.tag == "Rope"){
+                isRopeAttached = true;
+                if (attachedTo != collision.gameObject.transform.parent){
+                    if(disregard == null || collision.gameObject.transform.parent.gameObject != disregard){
+                        curAttachedRope = collision.gameObject.GetComponent<Rigidbody2D>();
+                    }
+                }
+            }
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -146,6 +268,13 @@ public class PlayerController : MonoBehaviour
         {
             isStageOn = false;
             stageManager.SetCurStageName(null);
+        }
+        if (!isClimbing)
+        {
+            if (collision.gameObject.tag == "Rope")
+            {
+                isRopeAttached = false;
+            }
         }
     }
 }

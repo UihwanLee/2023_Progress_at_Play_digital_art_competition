@@ -37,6 +37,7 @@ public class ChatGPTController : MonoBehaviour
     // ChatGPT 답변
     [SerializeField]
     private GameObject responseMessage;
+    private int maxMessageSize;
 
     [SerializeField]
     private GameObject chatGPTConversation;
@@ -53,6 +54,10 @@ public class ChatGPTController : MonoBehaviour
         targetPosY = 0.0f;
 
         isResponsing = false;
+
+        // 말풍선 메세지 최대 크기
+        // 한국어 기준으로 최대 사이즈를 정할 수 있도록 한다.
+        maxMessageSize = 104;
 
         waitForASecond.SetActive(false);
         responseMessage.SetActive(false);
@@ -132,27 +137,38 @@ public class ChatGPTController : MonoBehaviour
     IEnumerator TypingCoroutine(string _text)
     {
         responseMessage.GetComponent<TextMeshProUGUI>().text = "";
-        float textHeight;
-        float rectHeight = responseMessage.GetComponent<RectTransform>().rect.height;
-        int startIndex = 1;
-        float currentPageHeight = 0.0f;
-        for (int i=0; i<= _text.Length; ++i)
+
+        // Text가 길때 말풍선 갱신 처리
+        // 글자 수 별로 Text를 나누어 해당 수만큼 갱신하며 처리
+        int arraySize = (_text.Length % maxMessageSize == 0) ? _text.Length / maxMessageSize : (_text.Length/maxMessageSize) + 1; 
+        string[] messageArray = new string[arraySize];
+
+        for (int i=0; i< arraySize; ++i)
         {
-            responseMessage.GetComponent<TextMeshProUGUI>().text = _text.Substring(startIndex-1, i);
-            
-            // Overflow시 다음 말풍선에 적게 한다.
-            textHeight = responseMessage.GetComponent<TextMeshProUGUI>().preferredHeight;
-            if (textHeight > rectHeight + currentPageHeight)
+            // 0 103 207
+            int startIndex = (i==0) ? 0 : (maxMessageSize * i);
+            int endIndex = (i + 1 != arraySize) ? maxMessageSize : _text.Length - (maxMessageSize * i);
+
+            Debug.Log(startIndex);
+            Debug.Log(endIndex);
+            messageArray[i] = _text.Substring(startIndex, endIndex);
+        }
+
+        foreach(string message in messageArray)
+        {
+            responseMessage.GetComponent<TextMeshProUGUI>().text = "";
+            for (int j = 0; j < message.Length; ++j)
             {
-                currentPageHeight += textHeight;
-                responseMessage.GetComponent<TextMeshProUGUI>().text = "";
-                startIndex = i;
+                responseMessage.GetComponent<TextMeshProUGUI>().text = message.Substring(0, j);
+
+                yield return new WaitForSeconds(0.05f);
             }
             yield return new WaitForSeconds(0.05f);
         }
 
         yield return new WaitForSeconds(2.0f);
         responseMessage.GetComponent<TextMeshProUGUI>().text = "";
+        yield return new WaitForSeconds(1.0f);
         responseMessage.SetActive(false);
         responseUI.SetActive(false);
 
