@@ -147,8 +147,7 @@ public class PlayerController : MonoBehaviour
             }
 
             float smoothPosX = Mathf.Lerp(transform.position.x, targetPosX, smooting);
-            transform.position = new Vector3(smoothPosX, transform.position.y, transform.position.z);
-
+            rb.transform.position = new Vector3(smoothPosX, transform.position.y, transform.position.z);
         }
     }
 
@@ -156,14 +155,9 @@ public class PlayerController : MonoBehaviour
     {
         if (isClimbing)
         {
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                rb.AddRelativeForce(new Vector3(1, 0, 0) * pushForce);
-            }
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                rb.AddRelativeForce(new Vector3(-1, 0, 0) * pushForce);
-            }
+            pushForce = Random.Range(5f, 40f);
+            rb.AddRelativeForce(new Vector3(-1, 0, 0) * pushForce);
+
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 Slide(1);
@@ -227,10 +221,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void SetPlayerSpeed(float _speed) { speed = _speed; }
     public void MovePlayerPos(Vector3 _Pos) { transform.position = _Pos; targetPosX = transform.position.x; }
 
-    public HingeJoint2D GetPlayerHingeJoint2D() { return hj; }
-    public void SetAttachTo(Transform trans) { attachedTo = trans; }
+    public bool GetClimbing() { return isClimbing; }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {

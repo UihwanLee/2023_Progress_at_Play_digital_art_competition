@@ -119,9 +119,26 @@ public class ChatGPTController : MonoBehaviour
         //Debug.Log(sendMessage.GetComponent<TextMeshProUGUI>().text);
     }
 
+    public void CheckSendMessageGUI(TextMeshProUGUI sendMessage)
+    {
+        string message = sendMessage.text;
+
+        // 메세지를 답장받고 있는 중이라면 대기
+        if (isResponsing == false)
+        {
+            if (message.Length >= 2)
+            {
+                isResponsing = true;
+                chatGPTConversation.GetComponent<ChatGPTWrapper.ChatGPTConversation>().SendToChatGPT(sendMessage);
+                sendMessage.text = "";
+            }
+        }
+    }
+
     // ChatGPT의 답변을 받아 텍스트에 표시하기
     public void setText(string _message)
     {
+        responseUI.SetActive(true);
         if (responseUI.activeSelf)
         {
             waitForASecond.SetActive(false);
@@ -146,24 +163,22 @@ public class ChatGPTController : MonoBehaviour
         for (int i=0; i< arraySize; ++i)
         {
             // 0 103 207
-            int startIndex = (i==0) ? 0 : (maxMessageSize * i);
+            int startIndex = (i==0) ? 0 : (maxMessageSize * i) - 1;
             int endIndex = (i + 1 != arraySize) ? maxMessageSize : _text.Length - (maxMessageSize * i);
 
-            Debug.Log(startIndex);
-            Debug.Log(endIndex);
             messageArray[i] = _text.Substring(startIndex, endIndex);
         }
 
         foreach(string message in messageArray)
         {
             responseMessage.GetComponent<TextMeshProUGUI>().text = "";
-            for (int j = 0; j < message.Length; ++j)
+            for (int j = 0; j <= message.Length; ++j)
             {
                 responseMessage.GetComponent<TextMeshProUGUI>().text = message.Substring(0, j);
 
                 yield return new WaitForSeconds(0.05f);
             }
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.8f);
         }
 
         yield return new WaitForSeconds(2.0f);

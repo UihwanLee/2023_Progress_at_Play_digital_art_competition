@@ -6,8 +6,12 @@ public class StageManager : MonoBehaviour
 {
     // 기존 플레이어 위치 (-2, -1, 0)
 
+    [SerializeField]
+    private GameObject SNOW_EFFECT;
+
     // SpawnPos
-    private Vector3 stage1SpawnPos;
+    [SerializeField]
+    private Vector3 stage1SpawnPos; // (165.0f, 4.0f, 0.0f)
 
     // 현재 StageName
     private string curStageName;
@@ -17,13 +21,15 @@ public class StageManager : MonoBehaviour
     private PlayerController player;
     [SerializeField]
     private CameraController cameraController;
+    [SerializeField]
+    private MessageManager messageManager;
 
     // 싱글톤으로 관리
 
     // Start is called before the first frame update
     void Start()
     {
-        stage1SpawnPos = new Vector3(-40.0f, -56.0f, 0.0f);
+        SNOW_EFFECT.SetActive(false);
 
         curStageName = null;
     }
@@ -34,8 +40,12 @@ public class StageManager : MonoBehaviour
         {
             case "Global Warmming":
                 // 로딩 장면 + ChatGPT 설명 + PlayerPos 이동
+                SNOW_EFFECT.SetActive(true);
                 player.MovePlayerPos(stage1SpawnPos);
+                player.SetPlayerSpeed(2f);
                 cameraController.MoveCamera(stage1SpawnPos);
+
+                messageManager.SendMessage();
                 break;
             case "Inflaction":
                 break;

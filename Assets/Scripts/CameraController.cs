@@ -17,8 +17,10 @@ public class CameraController : MonoBehaviour
     private void LobbyMode()
     {
         float playerPosX = this.player.transform.position.x + 1f;
-        transform.position = new Vector3(playerPosX, transform.position.y, transform.position.z);
+        float playerPosY = (this.player.GetComponent<PlayerController>().GetClimbing()) ? this.player.transform.position.y + 1f : transform.position.y;
+        transform.position = new Vector3(playerPosX, playerPosY, transform.position.z);
     }
+
 
     public void MoveCamera(Vector3 _pos)
     {
