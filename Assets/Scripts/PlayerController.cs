@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     // Player 변수
     private Rigidbody2D rb;
     private HingeJoint2D hj;
+    private Animator anim;
 
     [SerializeField]
     private float characterSize = 1.35f;
@@ -63,6 +64,8 @@ public class PlayerController : MonoBehaviour
     {
         this.rb = GetComponent<Rigidbody2D>();
         this.hj = GetComponent<HingeJoint2D>();
+        this.anim = GetComponent<Animator>();
+
         hj.enabled = false;
         isMoveable = true;
 
@@ -111,6 +114,7 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
+                    this.anim.SetTrigger("jump");
                     rb.velocity = Vector2.up * jumpForce;
                 }
             }
@@ -141,10 +145,12 @@ public class PlayerController : MonoBehaviour
             // 방향에 따라 이미지 반전
             if (dir != 0)
             {
+                anim.SetBool("walk", true);
                 transform.localScale = new Vector3(dir * characterSize, characterSize, 1);
 
                 targetPosX += dir * speed * Time.deltaTime;
             }
+            else anim.SetBool("walk", false);
 
             float smoothPosX = Mathf.Lerp(transform.position.x, targetPosX, smooting);
             rb.transform.position = new Vector3(smoothPosX, transform.position.y, transform.position.z);
@@ -155,6 +161,8 @@ public class PlayerController : MonoBehaviour
     {
         if (isClimbing)
         {
+            anim.SetBool("walk", false);
+            anim.SetBool("climb", true);
             pushForce = Random.Range(5f, 40f);
             rb.AddRelativeForce(new Vector3(-1, 0, 0) * pushForce);
 
@@ -188,6 +196,8 @@ public class PlayerController : MonoBehaviour
         isClimbing = false;
         hj.enabled = false;
         hj.connectedBody = null;
+
+        anim.SetBool("climb", false);
     }
 
     public void Slide(int dir)
