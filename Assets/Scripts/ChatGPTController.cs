@@ -76,8 +76,11 @@ public class ChatGPTController : MonoBehaviour
         if(isMoveable)
         {
             // Player를 따라가는 함수
-            targetPosX = this.player.transform.position.x + -1.0f;
+            targetPosX = this.player.transform.position.x + ((player.GetComponent<PlayerController>().GetPlayerDir() >= 0) ? -1.5f :-2f);
             targetPosY = this.player.transform.position.y + 1.0f;
+
+            smootingX = (player.GetComponent<PlayerController>().GetPlayerDir() >= 0) ? 0.01f : 0.1f;
+            smootingX = (player.GetComponent<PlayerController>().GetPlayerDir() >= 0) ? 0.03f : 0.1f;
             float smoothPosX = Mathf.Lerp(transform.position.x, targetPosX, smootingX);
             float smoothPosY = Mathf.Lerp(transform.position.y, targetPosY, smootingY);
             transform.position = new Vector3(smoothPosX, smoothPosY, transform.position.z);
@@ -87,6 +90,7 @@ public class ChatGPTController : MonoBehaviour
             { 
                 targetPosX = Camera.main.WorldToScreenPoint(transform.position + new Vector3(0, 0.8f, 0)).x;
                 targetPosY = Camera.main.WorldToScreenPoint(transform.position + new Vector3(0, 2.4f, 0)).y;
+
                 smoothPosX = Mathf.Lerp(responseUI.transform.position.x, targetPosX, smootingX);
                 smoothPosY = Mathf.Lerp(responseUI.transform.position.y, targetPosY, smootingY);
                 responseUI.transform.position = new Vector3(smoothPosX, smoothPosY, 0.0f);

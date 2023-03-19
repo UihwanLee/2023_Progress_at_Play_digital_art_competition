@@ -17,13 +17,7 @@ public class RopeManager : MonoBehaviour
     [SerializeField]
     private PlayerController player;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        GenerateRope();
-    }
-
-    private void GenerateRope()
+    public void GenerateRope()
     {
         Rigidbody2D prevBod = hook;
         for(int i=0; i<numLinks; ++i)

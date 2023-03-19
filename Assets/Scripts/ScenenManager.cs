@@ -9,20 +9,31 @@ using UnityEngine;
 public class ScenenManager : MonoBehaviour
 {
     private bool isLoad;
+    private bool isSkip;
 
     [Header("UI")]
     [SerializeField]
     private GameObject loadingUI;
 
     [SerializeField]
+    private CameraController cameraController;
+
+    // Scripts
+    [SerializeField]
     private StageManager stageManager;
+    [SerializeField]
+    private UIManager uiManager;
+    private PlayerController player;
 
     // Start is called before the first frame update
     void Start()
     {
         isLoad = false;
+        isSkip = false;
 
         resetAlpha(loadingUI);
+
+        this.player = GameObject.Find("Player").GetComponent<PlayerController>();
     }
 
     private void resetAlpha(GameObject canvas)
@@ -57,6 +68,136 @@ public class ScenenManager : MonoBehaviour
         loadingUI.SetActive(false);
     }
 
+    // STAGE1 Field1 애니메이션
+    public void Anim_STAGE1_Field1()
+    {
+        player.SetPlayerWalk(false);
+        player.SetAnim(true);
+        StartCoroutine(Anim_STAGE1_Field1_Coroutine());
+    }
+
+    IEnumerator Anim_STAGE1_Field1_Coroutine()
+    {
+        uiManager.SetPurposeUI(false);
+        uiManager.SetSkipUI(true);
+
+        // 카메라 이동
+        Vector3 startPos = new Vector3(player.transform.position.x + 15.0f, player.transform.position.y + 1.0f, player.transform.position.z);
+        Vector3 endPos = new Vector3(player.transform.position.x + 1.0f, player.transform.position.y + 1.0f, player.transform.position.z);
+
+        if(!isSkip) cameraController.MoveCamera(startPos);
+
+        if (!isSkip) yield return new WaitForSeconds(3f);
+
+        stageManager.SetEffect("SNOW_EFFECT", true);
+
+        float duration = 5f;
+        float time = 0f;
+
+        while (time < duration)
+        {
+            if (isSkip) break;
+            cameraController.MoveCamera(Vector3.Lerp(startPos, endPos, (time / duration)));
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        // UI 설정 및 ChatGPT 설정
+
+        uiManager.NextPlayerMessage();
+        uiManager.NextChatAI();
+
+        if (!isSkip) yield return new WaitForSeconds(5f);
+
+        uiManager.SetPurposeUI(true);
+        uiManager.NextPurpose();
+
+        cameraController.MoveCamera(player.transform.position);
+
+        isSkip = false;
+        uiManager.SetSkipUI(false);
+
+        player.SetAnim(false);
+
+    }
+
+    // STAGE1 Field1 애니메이션
+    public void Anim_STAGE1_Field2()
+    {
+        player.SetAnim(true);
+        StartCoroutine(Anim_STAGE1_Field2_Coroutine());
+    }
+
+    IEnumerator Anim_STAGE1_Field2_Coroutine()
+    {
+        uiManager.SetSkipUI(true);
+        uiManager.SetPurposeUI(false);
+        stageManager.SetEffect("SNOW_EFFECT", false);
+
+        //if (field1 == null || field2 == null)
+        //{
+        //    //// Field2 페이드 인
+        //    //// Fade
+        //    //CanvasGroup cg = field2.GetComponent<CanvasGroup>();
+        //    //StartCoroutine(FadeCourtine(cg, cg.alpha, 1, 0.5f));
+        //    ////yield return new WaitForSeconds(time);
+        //    //StartCoroutine(FadeCourtine(cg, cg.alpha, 0, 0.5f));
+        //}
+        stageManager.GetStageField("STAGE_FIELD2").SetActive(true);
+
+        if(!isSkip) yield return new WaitForSeconds(2f);
+
+        player.DetachRope();
+
+        if (!isSkip) yield return new WaitForSeconds(2f);
+
+        stageManager.GetStageField("STAGE_FIELD1").SetActive(false);
+
+        float duration = 4f;
+        float time = 0f;
+
+        // 카메라 이동
+        Vector3 startPos = new Vector3(player.transform.position.x + 1.0f, player.transform.position.y + 1.0f, player.transform.position.z);
+        Vector3 endPos = new Vector3(player.transform.position.x - 15.0f, player.transform.position.y + 1.0f, player.transform.position.z);
+
+        while (time < duration)
+        {
+            if (isSkip) break;
+            cameraController.MoveCamera(Vector3.Lerp(startPos, endPos, (time / duration)));
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        time = 0f;
+
+        startPos = cameraController.transform.position;
+        endPos = new Vector3(player.transform.position.x + 1.0f, player.transform.position.y + 1.0f, player.transform.position.z);
+
+        while (time < duration)
+        {
+            if (isSkip) break;
+            cameraController.MoveCamera(Vector3.Lerp(startPos, endPos, (time / duration)));
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        // UI 설정 및 ChatGPT 설정
+        uiManager.NextPlayerMessage();
+        uiManager.NextChatAI();
+
+        if (!isSkip) yield return new WaitForSeconds(5f);
+
+        uiManager.SetPurposeUI(true);
+        uiManager.NextPurpose();
+
+        cameraController.MoveCamera(player.transform.position);
+
+        isSkip = false;
+        uiManager.SetSkipUI(false);
+
+        player.SetAnim(false);
+    }
+
     IEnumerator FadeCourtine(CanvasGroup _cg, float _start, float _end, float _duration)
     {
         float counter = 0.0f;
@@ -73,4 +214,5 @@ public class ScenenManager : MonoBehaviour
     }
 
     public bool isLoading() { return isLoad; }
+    public void SetSkip(bool _active) { isSkip = _active; }
 }

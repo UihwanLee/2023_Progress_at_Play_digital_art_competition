@@ -24,18 +24,23 @@ public class PlayerController : MonoBehaviour
     private float smooting = 0.1f;
     private float targetPosX;
 
+    private float dir;
+
     [SerializeField]
     private float jumpForce = 10.0f;
     private float fallMultiplier = 2.5f; // The multiplier for the player's falling velocity
     private float lowJumpMultiplier = 2f;
 
+    // 상태 변수
     // Stage 변수
     private bool isStageOn;
     private string curStageName;
 
-    // 상태 변수
     [SerializeField]
     private bool isGround;
+    private bool isInterecting;
+    private bool isBlocking;
+    private bool isAnim;
 
     // Rope 변수
     private bool isRopeAttached;
@@ -57,6 +62,8 @@ public class PlayerController : MonoBehaviour
     private ScenenManager sceneManager;
     [SerializeField]
     private RopeManager ropeManager;
+    [SerializeField]
+    private InterectManager interectManager;
 
 
     // Start is called before the first frame update
@@ -65,6 +72,8 @@ public class PlayerController : MonoBehaviour
         this.rb = GetComponent<Rigidbody2D>();
         this.hj = GetComponent<HingeJoint2D>();
         this.anim = GetComponent<Animator>();
+
+        dir = 0.0f;
 
         hj.enabled = false;
         isMoveable = true;
@@ -76,6 +85,10 @@ public class PlayerController : MonoBehaviour
         isClimbing = false;
         isRopeAttached = false;
         attachedTo = null;
+
+        isInterecting = false;
+        isBlocking = false;
+        isAnim = false;
 
         curAttachedRope = null;
 
@@ -99,18 +112,29 @@ public class PlayerController : MonoBehaviour
         // i) 타이핑 중이 아닐때
         // i) 로딩 중이 아닐 때
         // i) 밧줄 잡는 중이 아닐 때
-        if (isMoveable && !isTyping && !isLoading && !isClimbing)
+        // i) Block 오브젝트에 접근한게 아닐 때
+        // i) 애니메이션 중이 아닐 때
+        if (isMoveable && !isTyping && !isLoading && !isClimbing && !isBlocking && !isAnim)
         {
             //bool isMove = false;
 
             // 점프
             if ((Input.GetKeyDown(KeyCode.Space) && isGround))
             {
-                // 스테이즈 들어가고 나서도 점프할 수 있게 해줘야함
-                // 스테이즈 체크 
+                /* 
+                    스페이스 상태 조건
+                    i) Stage Door 상호작용
+                    i) Object 상호작용
+                    i) Player jump
+                 */
                 if (isStageOn && stageManager.GetCurStageName() != null)
                 {
-                    sceneManager.LoadStage();
+                    // Stage 입장이 가능하다면 로딩
+                    if(stageManager.CheckEnterSTAGE(stageManager.GetCurStageName())) sceneManager.LoadStage();
+                }
+                else if(isInterecting && interectManager.GetCurInterctObj() != null)
+                {
+                    interectManager.Interect();
                 }
                 else
                 {
@@ -137,7 +161,7 @@ public class PlayerController : MonoBehaviour
             }
 
             // 좌우 이동
-            float dir = 0;
+            dir = 0;
             if (Input.GetKey(KeyCode.RightArrow)) dir = 1.0f;
             if (Input.GetKey(KeyCode.LeftArrow)) dir = -1.0f;
 
@@ -159,8 +183,15 @@ public class PlayerController : MonoBehaviour
 
     private void CheckClimbing()
     {
-        if (isClimbing)
+        if (isClimbing & !isAnim)
         {
+            // 일정 수치 이상 올라갔을 시 Field 이동으로 측정되어 Anim 추가 
+
+            if(this.transform.position.y >= 18.0f)
+            {
+                sceneManager.Anim_STAGE1_Field2();
+            }
+
             anim.SetBool("walk", false);
             anim.SetBool("climb", true);
             pushForce = Random.Range(5f, 40f);
@@ -190,7 +221,7 @@ public class PlayerController : MonoBehaviour
         attachedTo = rope.gameObject.transform.parent;
     }
 
-    private void DetachRope()
+    public void DetachRope()
     {
         hj.connectedBody.gameObject.GetComponent<RopeSegment>().isPlayerAttached = false;
         isClimbing = false;
@@ -231,10 +262,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void SetPlayerWalk(bool _active) { this.anim.SetBool("walk", _active); }
+    public float GetPlayerDir() { return dir; }
     public void SetPlayerSpeed(float _speed) { speed = _speed; }
     public void MovePlayerPos(Vector3 _Pos) { transform.position = _Pos; targetPosX = transform.position.x; }
 
     public bool GetClimbing() { return isClimbing; }
+    public void SetInterect(bool _isInterect) { isInterecting = _isInterect; }
+    public void SetBlocking(bool _isBlock) { isBlocking = _isBlock; }
+
+    public bool GetAnim() { return isAnim; }
+    public void SetAnim(bool _isAnim) { isAnim = _isAnim; }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -251,7 +289,6 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.tag == "Stage")
         {
             isStageOn = true;
-            stageManager.SetCurStageName(collision.gameObject.name);
         }
         if(!isClimbing)
         {
@@ -271,7 +308,6 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.tag == "Stage")
         {
             isStageOn = false;
-            stageManager.SetCurStageName(null);
         }
         if (!isClimbing)
         {

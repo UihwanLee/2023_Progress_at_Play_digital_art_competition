@@ -7,6 +7,10 @@ public class Highlight : MonoBehaviour
     private float originSize;
     private float highlightSize;
 
+    // Scripts
+    private StageManager stageManager;
+    private UIManager uiManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -15,6 +19,10 @@ public class Highlight : MonoBehaviour
 
         // Highligh Sprite Enable false
         this.transform.GetChild(1).GetComponent<SpriteRenderer>().enabled = false;
+        this.transform.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
+
+        this.stageManager = GameObject.Find("StageManager").GetComponent<StageManager>();
+        this.uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
     }
 
 
@@ -23,13 +31,22 @@ public class Highlight : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
-            // Lecture 크기 키우기
-            this.transform.GetChild(0).transform.localScale = new Vector3(highlightSize, highlightSize, 1);
+            stageManager.SetCurStageName(this.gameObject.name);
 
-            // Highligh Sprite Enable
-            this.transform.GetChild(1).GetComponent<SpriteRenderer>().enabled = true;
+            if(stageManager.CheckEnterSTAGE(this.gameObject.name))
+            {
+                // Lecture 크기 키우기
+                this.transform.GetChild(0).transform.localScale = new Vector3(highlightSize, highlightSize, 1);
 
+                // Highligh Sprite Enable
+                this.transform.GetChild(1).GetComponent<SpriteRenderer>().enabled = true;
 
+                uiManager.SetInterectUI(true);
+            }
+            else
+            {
+                this.transform.GetChild(2).GetComponent<SpriteRenderer>().enabled = true;
+            }
         }
     }
 
@@ -37,11 +54,16 @@ public class Highlight : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
+            stageManager.SetCurStageName(null);
+
             // Lecture 크기 원상복귀
             this.transform.GetChild(0).transform.localScale = new Vector3(originSize, originSize, 1);
 
             // Highligh Sprite Enable false
             this.transform.GetChild(1).GetComponent<SpriteRenderer>().enabled = false;
+            this.transform.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
+
+            uiManager.SetInterectUI(false);
         }
     }
 }
