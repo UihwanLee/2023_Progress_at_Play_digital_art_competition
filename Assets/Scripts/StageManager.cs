@@ -17,13 +17,17 @@ public class StageManager : MonoBehaviour
     // STAZE1 : Gloabal Warmming
     [Header("STAGE1")]
     [SerializeField]
-    private GameObject STAGE_BG;
+    private GameObject STAGE1_BG;
+    [SerializeField]
+    private Sprite[] BG_ARR;
     [SerializeField]
     private GameObject SNOW_EFFECT;
     [SerializeField]
     private GameObject stage1_field1;
     [SerializeField]
     private GameObject stage1_field2;
+    [SerializeField]
+    private GameObject stage1_field3;
     [SerializeField]
     private Vector3 stage1SpawnPos; // (165.0f, 4.0f, 0.0f) 기존 플레이어 위치 (-2, -1, 0)
 
@@ -49,6 +53,7 @@ public class StageManager : MonoBehaviour
 
         //stage1_field1.SetActive(false);
         stage1_field2.SetActive(false);
+        stage1_field3.SetActive(false);
 
         curStageName = null;
     }
@@ -117,7 +122,7 @@ public class StageManager : MonoBehaviour
                 field = stage1_field2;
                 break;
             case "STAGE_FIELD3":
-                
+                field = stage1_field3;
                 break;
             default:
                 break;
@@ -125,6 +130,9 @@ public class StageManager : MonoBehaviour
 
         return field;
     }
+
+    public void SetStage1BG(int index) { STAGE1_BG.GetComponent<SpriteRenderer>().sprite = BG_ARR[index]; }
+    public GameObject GetStage1BG() { return STAGE1_BG; }
 
     public void SetCurStageName(string _name) { curStageName = _name; }
     public string GetCurStageName() { return curStageName; }

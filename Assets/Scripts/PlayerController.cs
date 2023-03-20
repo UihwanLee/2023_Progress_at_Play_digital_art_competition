@@ -267,12 +267,14 @@ public class PlayerController : MonoBehaviour
     public void SetPlayerSpeed(float _speed) { speed = _speed; }
     public void MovePlayerPos(Vector3 _Pos) { transform.position = _Pos; targetPosX = transform.position.x; }
 
+    public void SetClimbing(bool _acitve) { isClimbing = _acitve; } 
     public bool GetClimbing() { return isClimbing; }
     public void SetInterect(bool _isInterect) { isInterecting = _isInterect; }
     public void SetBlocking(bool _isBlock) { isBlocking = _isBlock; }
 
     public bool GetAnim() { return isAnim; }
     public void SetAnim(bool _isAnim) { isAnim = _isAnim; }
+
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
