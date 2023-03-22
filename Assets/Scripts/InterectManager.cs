@@ -15,6 +15,7 @@ public class InterectManager : MonoBehaviour
 
     // Interct 변수
 
+    [Header("STAGE1")]
     // 물뿌리개
     private Interect waterPail;
     private bool waterPailEmpty;
@@ -28,9 +29,20 @@ public class InterectManager : MonoBehaviour
     [SerializeField]
     private Sprite[] sproutHighlightSprites;
 
+
+    [Header("STAGE2")]
+    [SerializeField]
+    private GameObject cafe;
+    [SerializeField]
+    private MoneySystem moneySystem;
+    private bool isWorking;
+
     // Scripts
+    [Header("Scripts")]
     [SerializeField]
     private ScenenManager sceneManager;
+    [SerializeField]
+    private UIManager uiManager;
 
     // Start is called before the first frame update
     void Start()
@@ -41,6 +53,8 @@ public class InterectManager : MonoBehaviour
         waterPailEmpty = true;
 
         curSproutSpriteIndex = 0;
+
+        isWorking = false;
     }
 
     public void Interect()
@@ -106,12 +120,56 @@ public class InterectManager : MonoBehaviour
                     }
                 }
                 break;
+            case "BusDoor":
+                {
+                    // 첫 Interect시
+                    if (this.curInterctObj.isInterect == false)
+                    {
+                        // Scene 가동
+                        sceneManager.Anim_STAGE2_Field1();
+
+                        // Cafe Interect 활성화
+                        cafe.GetComponent<BoxCollider2D>().enabled = true;
+                        cafe.GetComponent<Interect>().enabled = true;
+                    }
+                    else
+                    {
+                        if(moneySystem == null) break;
+
+                        // 버스 비용보다 적을 시
+                        if (moneySystem.GetCurBusCost() > player.GetMoney())
+                        {
+                            uiManager.ObjTalking(curInterctObj.index, 3);
+                        }
+                        // 버스 비용을 만족 했을 시
+                        else
+                        {
+                            // Scene 가동
+                        }
+                    }
+                    this.curInterctObj.isInterect = true;
+                }
+                break;
+            case "cafe":
+                {
+                    if (Input.GetKey(KeyCode.Space))
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
+                }
+                break;
             default:
                 break;
         }
     }
 
-
     public void SetCurInterctObject(Interect _obj) { curInterctObj = _obj; }
     public Interect GetCurInterctObj() { return curInterctObj; }
+
+    public bool IsWorking() { return isWorking; }
+    public void SetIsWorking(bool _isWorking) { isWorking = _isWorking; }
 }

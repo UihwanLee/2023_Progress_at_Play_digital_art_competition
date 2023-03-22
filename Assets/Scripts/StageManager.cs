@@ -10,6 +10,8 @@ public class StageManager : MonoBehaviour
     private string curStageName;
 
     // STAGE 단계
+    private int clearIndex;
+    [SerializeField]
     private bool clearSTAGE1;
     private bool clearSTAGE2;
     private bool clearSTAGE3;
@@ -31,10 +33,28 @@ public class StageManager : MonoBehaviour
     [SerializeField]
     private Vector3 stage1SpawnPos; // (165.0f, 4.0f, 0.0f) 기존 플레이어 위치 (-2, -1, 0)
 
+    // STAZE1 : Gloabal Warmming
+    [Header("STAGE2")]
+    [SerializeField]
+    private GameObject stage2_field1;
+    [SerializeField]
+    private GameObject stage2_field2;
+    [SerializeField]
+    private GameObject stage2_field3; 
+    [SerializeField]
+    private Vector3 stage2SpawnPos; // (285.0f, 4.0f, 0.0f)
+
+
+
+    // Lobby CurPos
+    private Vector3 curPlayerLobbyPos;
+
 
     // Scipts
     [SerializeField]
     private PlayerController player;
+    [SerializeField]
+    private CameraController cameraController;
     [SerializeField]
     private UIManager uiManager;
     [SerializeField]
@@ -45,6 +65,8 @@ public class StageManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        clearIndex = 0;
+
         clearSTAGE1 = false;
         clearSTAGE2 = false;
         clearSTAGE3 = false;
@@ -56,20 +78,56 @@ public class StageManager : MonoBehaviour
         stage1_field3.SetActive(false);
 
         curStageName = null;
+
+        curPlayerLobbyPos = player.transform.position;
     }
 
     public void SpawnPlayerStage(string _stageName)
     {
         switch (_stageName)
         {
+            case "Stage End":
+                {
+                    uiManager.SetSendUIActive(true);
+                    player.MovePlayerPos(new Vector3(curPlayerLobbyPos.x, curPlayerLobbyPos.y + 1.0f, curPlayerLobbyPos.z));
+                    cameraController.MoveCamera(new Vector3(curPlayerLobbyPos.x, curPlayerLobbyPos.y, curPlayerLobbyPos.z));
+                    uiManager.NextPurpose();
+                }
+                break;
             case "Global Warmming":
                 // 로딩 장면 + ChatGPT 설명 + PlayerPos 이동
                 uiManager.SetSendUIActive(false);
+                curPlayerLobbyPos = player.transform.position;
                 player.MovePlayerPos(stage1SpawnPos);
                 player.SetPlayerSpeed(2f);
                 sceneManager.Anim_STAGE1_Field1();
                 break;
             case "Inflaction":
+                uiManager.SetSendUIActive(false);
+                curPlayerLobbyPos = player.transform.position;
+                player.MovePlayerPos(stage2SpawnPos);
+                cameraController.MoveCamera(player.transform.position);
+                uiManager.NextPurpose();
+                break;
+            default:
+                break;
+        }
+    }
+
+    // 스테이즈 클리어 함수
+    public void SetStageClear()
+    {
+        clearIndex++;
+        switch(clearIndex)
+        {
+            case 1:
+                clearSTAGE1 = true;
+                break;
+            case 2:
+                clearSTAGE2 = true;
+                break;
+            case 3:
+                clearSTAGE3 = true;
                 break;
             default:
                 break;
@@ -82,11 +140,15 @@ public class StageManager : MonoBehaviour
         bool canEnter = false;
         switch (_stageName)
         {
+            case "Stage End":
+                canEnter = true;
+                break;
             case "Global Warmming":
                 canEnter = !clearSTAGE1;
                 break;
             case "Inflaction":
-                canEnter = (clearSTAGE1 && !clearSTAGE2 && !clearSTAGE3);
+                canEnter = true;
+                //canEnter = (clearSTAGE1 && !clearSTAGE2 && !clearSTAGE3);
                 break;
             case "LowBirthRate":
                 canEnter = (clearSTAGE1 && clearSTAGE2 && !clearSTAGE3);

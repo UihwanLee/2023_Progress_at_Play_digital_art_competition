@@ -4,12 +4,19 @@ using UnityEngine;
 
 public class SmoothFollow : MonoBehaviour
 {
-    private float smootingX = 0.01f;
-    private float smootingY = 0.03f;
     private float targetPosX;
     private float targetPosY;
 
-    private PlayerController player;
+    [SerializeField]
+    private GameObject obj;
+    [SerializeField]
+    private Vector3 movePosX;
+    [SerializeField]
+    private Vector3 movePosY;
+    [SerializeField]
+    private float smootingX; // = 0.01f;
+    [SerializeField]
+    private float smootingY; // = 0.03f;
 
     // Start is called before the first frame update
     void Start()
@@ -17,8 +24,6 @@ public class SmoothFollow : MonoBehaviour
         // 변수 초기화
         targetPosX = 0.0f;
         targetPosY = 0.0f;
-
-        player = GameObject.Find("Player").GetComponent<PlayerController>();
     }
 
     // Update is called once per frame
@@ -30,10 +35,10 @@ public class SmoothFollow : MonoBehaviour
     private void Follow()
     {
         // ChatGPT 말풍선 움직임 확인
-        if (this.gameObject.activeSelf && player != null)
+        if (this.gameObject.activeSelf && obj != null)
         {
-            targetPosX = Camera.main.WorldToScreenPoint(player.transform.position + new Vector3(0, 3f, 0)).x;
-            targetPosY = Camera.main.WorldToScreenPoint(player.transform.position + new Vector3(0, 2.4f, 0)).y;
+            targetPosX = Camera.main.WorldToScreenPoint(obj.transform.position + movePosX).x;
+            targetPosY = Camera.main.WorldToScreenPoint(obj.transform.position + movePosY).y;
 
             float smoothPosX = Mathf.Lerp(this.transform.position.x, targetPosX, smootingX);
             float smoothPosY = Mathf.Lerp(this.transform.position.y, targetPosY, smootingY);

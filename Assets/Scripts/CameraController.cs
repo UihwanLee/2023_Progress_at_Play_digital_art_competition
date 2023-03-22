@@ -7,15 +7,24 @@ public class CameraController : MonoBehaviour
     [SerializeField]
     private GameObject player;
 
+    [SerializeField]
+    private bool isMovalbe;
+
+    private void Start()
+    {
+        isMovalbe = false;
+    }
+
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         LobbyMode();
     }
 
     private void LobbyMode()
     {
-        if(this.player.GetComponent<PlayerController>().GetAnim() == false)
+        isMovalbe = !(this.player.GetComponent<PlayerController>().GetAnim());
+        if (isMovalbe)
         {
             float playerPosX = this.player.transform.position.x + 1f;
             float playerPosY = (this.player.GetComponent<PlayerController>().GetClimbing()) ? this.player.transform.position.y + 1f : transform.position.y;

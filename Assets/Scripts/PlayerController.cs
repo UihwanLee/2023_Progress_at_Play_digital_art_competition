@@ -40,6 +40,8 @@ public class PlayerController : MonoBehaviour
     private bool isGround;
     private bool isInterecting;
     private bool isBlocking;
+
+    [SerializeField]
     private bool isAnim;
 
     // Rope 변수
@@ -51,6 +53,11 @@ public class PlayerController : MonoBehaviour
 
     private GameObject disregard;
     public GameObject pulleySelected = null;
+
+    // MoneySystem
+    private int money;
+    [SerializeField]
+    private MoneySystem moneySystem;
 
     [SerializeField]
     private GameObject chatGPTController;
@@ -90,6 +97,8 @@ public class PlayerController : MonoBehaviour
         isBlocking = false;
         isAnim = false;
 
+        money = 0;
+
         curAttachedRope = null;
 
         targetPosX = transform.position.x; 
@@ -107,6 +116,7 @@ public class PlayerController : MonoBehaviour
     {
         bool isTyping = chatGPTController.GetComponent<ChatGPTController>().IsTyping();
         bool isLoading = sceneManager.isLoading();
+        bool isWorking = interectManager.IsWorking();
 
         // i) 움직일 수 있을 때
         // i) 타이핑 중이 아닐때
@@ -114,19 +124,21 @@ public class PlayerController : MonoBehaviour
         // i) 밧줄 잡는 중이 아닐 때
         // i) Block 오브젝트에 접근한게 아닐 때
         // i) 애니메이션 중이 아닐 때
-        if (isMoveable && !isTyping && !isLoading && !isClimbing && !isBlocking && !isAnim)
+        if (isMoveable && !isTyping && !isLoading && !isClimbing && !isBlocking && !isAnim && !isWorking)
         {
             //bool isMove = false;
+
 
             // 점프
             if ((Input.GetKeyDown(KeyCode.Space) && isGround))
             {
-                /* 
-                    스페이스 상태 조건
-                    i) Stage Door 상호작용
-                    i) Object 상호작용
-                    i) Player jump
-                 */
+            /* 
+               스페이스 상태 조건
+               i) Stage Door 상호작용
+               i) Object 상호작용
+               i) Player jump
+            */
+                
                 if (isStageOn && stageManager.GetCurStageName() != null)
                 {
                     // Stage 입장이 가능하다면 로딩
@@ -134,7 +146,11 @@ public class PlayerController : MonoBehaviour
                 }
                 else if(isInterecting && interectManager.GetCurInterctObj() != null)
                 {
-                    interectManager.Interect();
+                    // Working 오브젝트가 아닐 시 Interect
+                    if(interectManager.GetCurInterctObj().GetObjName() != "cafe")
+                    {
+                        interectManager.Interect();
+                    }
                 }
                 else
                 {
@@ -274,6 +290,9 @@ public class PlayerController : MonoBehaviour
 
     public bool GetAnim() { return isAnim; }
     public void SetAnim(bool _isAnim) { isAnim = _isAnim; }
+
+    public int GetMoney() { return money; }
+    public void SetMoney(int _money) { money = _money; }
 
 
     private void OnCollisionEnter2D(Collision2D collision)

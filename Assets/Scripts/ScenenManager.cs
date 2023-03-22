@@ -23,6 +23,8 @@ public class ScenenManager : MonoBehaviour
     private StageManager stageManager;
     [SerializeField]
     private UIManager uiManager;
+    [SerializeField]
+    private InterectManager interectManager;
     private PlayerController player;
 
     // Start is called before the first frame update
@@ -201,7 +203,9 @@ public class ScenenManager : MonoBehaviour
         }
 
         // UI 설정 및 ChatGPT 설정
-        uiManager.NextPlayerMessage();
+
+        StartCoroutine(PlayerMessageWait(3f));
+        //uiManager.NextPlayerMessage();
         uiManager.NextChatAI();
 
         if (!isSkip) yield return new WaitForSeconds(5f);
@@ -281,6 +285,8 @@ public class ScenenManager : MonoBehaviour
             yield return null;
         }
 
+        if (isSkip) player.transform.position = (new Vector3(player.transform.position.x, 32.0f, player.transform.position.z));
+
         stageManager.SetStage1BG(2);
         stageManager.GetStage1BG().transform.position =
             new Vector3(stageManager.GetStage1BG().transform.position.x, stageManager.GetStage1BG().transform.position.y + 10f, stageManager.GetStage1BG().transform.position.z);
@@ -289,13 +295,12 @@ public class ScenenManager : MonoBehaviour
 
         stageManager.GetStageField("STAGE_FIELD3").SetActive(true);
 
-        //cameraController.MoveCamera(player.transform.position);
+        cameraController.MoveCamera(player.transform.position);
+        player.SetAnim(false);
 
         // UI 설정 및 ChatGPT 설정
-        uiManager.NextPlayerMessage();
+        StartCoroutine(PlayerMessageWait(3f));
         uiManager.NextChatAI();
-
-        if (!isSkip) yield return new WaitForSeconds(3f);
 
         uiManager.SetPurposeUI(true);
         uiManager.NextPurpose();
@@ -303,9 +308,71 @@ public class ScenenManager : MonoBehaviour
         isSkip = false;
         uiManager.SetSkipUI(false);
 
+
         player.SetPlayerSpeed(5f);
 
         player.SetAnim(false);
+
+        // Stage1 클리어
+        stageManager.SetStageClear();
+    }
+
+    public void Anim_STAGE2_Field1()
+    {
+        player.SetAnim(true);
+        StartCoroutine(Anim_STAGE2_Field1_Coroutine());
+    }
+
+    IEnumerator Anim_STAGE2_Field1_Coroutine()
+    {
+        uiManager.SetSkipUI(true);
+        uiManager.SetPurposeUI(false);
+
+        yield return new WaitForSeconds(1f);
+        // BusManager 
+        uiManager.ObjTalking(interectManager.GetCurInterctObj().index, 0);
+
+        if (!isSkip) yield return new WaitForSeconds(4f);
+
+        uiManager.NextPlayerMessage();
+
+        if (!isSkip) yield return new WaitForSeconds(4f);
+
+        uiManager.ObjTalking(interectManager.GetCurInterctObj().index, 1);
+
+        if (!isSkip) yield return new WaitForSeconds(4f);
+
+        uiManager.NextPlayerMessage();
+
+        if (!isSkip) yield return new WaitForSeconds(4f);
+
+        uiManager.ObjTalking(interectManager.GetCurInterctObj().index, 2);
+
+        if (!isSkip) yield return new WaitForSeconds(7f);
+
+
+        // chatAI
+        StartCoroutine(PlayerMessageWait(3f));
+        //uiManager.NextPlayerMessage();
+        uiManager.NextChatAI();
+
+
+        uiManager.SetPurposeUI(true);
+        uiManager.NextPurpose();
+
+        isSkip = false;
+        uiManager.SetSkipUI(false);
+
+        // Money System UI 활성화!
+        uiManager.SetMoneySystemUI(true);
+
+        player.SetAnim(false);
+    }
+
+    IEnumerator PlayerMessageWait(float _time)
+    {
+        yield return new WaitForSeconds(_time);
+        uiManager.NextPlayerMessage();
     }
 
 

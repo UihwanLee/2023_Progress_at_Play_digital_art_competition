@@ -20,6 +20,16 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameObject playerMessageUI;
 
+    // Money System UI
+    [SerializeField]
+    private GameObject moneySystemUI;
+    [SerializeField]
+    private GameObject busCost;
+    [SerializeField]
+    private GameObject myMoney;
+    [SerializeField]
+    private GameObject limitTime;
+
     [SerializeField]
     private GameObject skipUI;
     
@@ -42,6 +52,14 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Message[] playerMessageArr;
 
+    // Object Text 관리 : 오브젝트가 Interect 경우만 말하게 행동
+    private int curObjIndex; // 현재 오브젝트 인덱스
+    private int curObjMessageIndex; // 현재 오브젝트가 말할 메세지 인덱스
+    [SerializeField]
+    private GameObject[] objText;
+    [SerializeField]
+    private Message[] objMessageArr;
+
     // Scripts
     [SerializeField]
     private ChatGPTController chatGPTController;
@@ -50,9 +68,9 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // 목표 설정
-        curPurposIndex = 0;
-        curChatAIIndex = 0;
-        curPlayerIndex = 0;
+        curPurposIndex = 4;
+        curChatAIIndex = 3;
+        curPlayerIndex = 5;
 
         NextPurpose();
 
@@ -62,6 +80,12 @@ public class UIManager : MonoBehaviour
         sendUI.SetActive(true);
         interectUI.SetActive(false);
         playerMessageUI.SetActive(false);
+        moneySystemUI.SetActive(false);
+
+        for (int i=0; i<objText.Length; i++)
+        {
+            objText[i].SetActive(false);
+        }
 
         skipUI.SetActive(false);
     }
@@ -89,6 +113,11 @@ public class UIManager : MonoBehaviour
     public void SetSkipUI(bool _active)
     {
         skipUI.SetActive(_active);
+    }
+
+    public void SetMoneySystemUI(bool _active)
+    {
+        moneySystemUI.SetActive(_active);
     }
 
     public void NextPurpose()
@@ -121,8 +150,22 @@ public class UIManager : MonoBehaviour
     }
     public void AddPlayerIndex() { curPurposIndex++; }
 
+    // 일반 오브젝트가 말하기
+    public void ObjTalking(int _objIndex, int _objMessageIndex)
+    {
+        if (!objText[_objIndex] || !objMessageArr[_objMessageIndex]) return;
+
+        Debug.Log("ObjTalking");
+        objText[_objIndex].SetActive(true);
+        StartCoroutine(TypingCoroutine(objText[_objIndex], objText[_objIndex].transform.GetChild(0).GetComponent<TextMeshProUGUI>(), objMessageArr[_objMessageIndex].GetMessage()));
+    }
+
+    public void SetCurObjIndex(int _index) { curObjIndex = _index; }
+    public void SetCurObjMessageIndex(int _index) { curObjMessageIndex = _index; }
+
     IEnumerator TypingCoroutine(GameObject _ui, TextMeshProUGUI _messageText, string _text)
     {
+        Debug.Log("ObjTalkingMessage");
         for (int j = 0; j <= _text.Length; ++j)
         {
             _messageText.text = _text.Substring(0, j);

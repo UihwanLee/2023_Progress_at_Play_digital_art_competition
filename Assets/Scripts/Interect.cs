@@ -7,6 +7,11 @@ public class Interect : MonoBehaviour
     [SerializeField]
     private string objectName;
 
+    // 오브젝트 Message 처리 변수
+    // 말할 오브젝트 제외하고 -1로 초기화
+    // 말할 오브젝트는 순서대로 인덱스 초기화
+    public int index; 
+
     private SpriteRenderer spriteRenderer;
 
     // 상호작용 후 Sprtie 바꿀 이미지
@@ -17,10 +22,12 @@ public class Interect : MonoBehaviour
     private UIManager uiManager;
 
     public bool isActive;
+    public bool isInterect;
 
     // Start is called before the first frame update
     void Start()
     {
+        this.isInterect = false;
         this.isActive = false;
         this.spriteRenderer = GetComponent<SpriteRenderer>();
         this.interectManager = GameObject.Find("InterectManager").GetComponent<InterectManager>();
