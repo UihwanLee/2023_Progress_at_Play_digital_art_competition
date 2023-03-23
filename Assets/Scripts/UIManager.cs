@@ -32,7 +32,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField]
     private GameObject skipUI;
-    
+
     // Purpose Text 관리
     private int curPurposIndex;
     [SerializeField]
@@ -68,9 +68,9 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // 목표 설정
-        curPurposIndex = 4;
-        curChatAIIndex = 3;
-        curPlayerIndex = 5;
+        curPurposIndex = 0;
+        curChatAIIndex = 0;
+        curPlayerIndex = 0;
 
         NextPurpose();
 
@@ -82,13 +82,17 @@ public class UIManager : MonoBehaviour
         playerMessageUI.SetActive(false);
         moneySystemUI.SetActive(false);
 
-        for (int i=0; i<objText.Length; i++)
+        for (int i = 0; i < objText.Length; i++)
         {
             objText[i].SetActive(false);
         }
 
         skipUI.SetActive(false);
     }
+
+    public void SetLanguageKOR() { LANGUAGE = "_KOR"; }
+    public void SetLanguageENG() { LANGUAGE = "_ENG"; }
+    public string GetCurLanguage() { return LANGUAGE; }
 
     public void SetSendUIActive(bool _active)
     {
@@ -155,7 +159,6 @@ public class UIManager : MonoBehaviour
     {
         if (!objText[_objIndex] || !objMessageArr[_objMessageIndex]) return;
 
-        Debug.Log("ObjTalking");
         objText[_objIndex].SetActive(true);
         StartCoroutine(TypingCoroutine(objText[_objIndex], objText[_objIndex].transform.GetChild(0).GetComponent<TextMeshProUGUI>(), objMessageArr[_objMessageIndex].GetMessage()));
     }
@@ -165,7 +168,6 @@ public class UIManager : MonoBehaviour
 
     IEnumerator TypingCoroutine(GameObject _ui, TextMeshProUGUI _messageText, string _text)
     {
-        Debug.Log("ObjTalkingMessage");
         for (int j = 0; j <= _text.Length; ++j)
         {
             _messageText.text = _text.Substring(0, j);

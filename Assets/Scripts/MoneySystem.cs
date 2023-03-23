@@ -68,7 +68,7 @@ public class MoneySystem : MonoBehaviour
             {
                 interectManager.SetIsWorking(true);
 
-                player.transform.position = new Vector3(298f, 1.7f, player.transform.position.z);
+                player.transform.position = new Vector3(298f, 4f, player.transform.position.z);
 
                 // anim
 

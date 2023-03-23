@@ -20,5 +20,13 @@ public class Message : ScriptableObject
         ETC
     }
 
-    public string GetMessage() { return message_KOR; }
+    public string GetMessage() 
+    {
+        UIManager uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+        if (uiManager.GetCurLanguage() == "_ENG") return message_ENG;
+        else
+        {
+            return message_KOR;
+        }
+    }
 }
