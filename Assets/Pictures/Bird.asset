@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9de5977123f9e2646b9f2cca8608b3c9, type: 3}
+  m_Name: Bird
+  m_EditorClassIdentifier: 
+  pictureTitle: Bird
+  pirctureDefault: {fileID: 21300000, guid: e1eedba16b3c7b24a9a70a5212b53884, type: 3}
+  pirctureColor: {fileID: 21300000, guid: cd82cfdf8f53d0e468ec25e5687cc353, type: 3}
