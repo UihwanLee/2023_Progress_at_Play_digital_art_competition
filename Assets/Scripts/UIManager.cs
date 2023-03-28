@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +17,7 @@ public class UIManager : MonoBehaviour
     // Select Canvas UI
     [SerializeField]
     private Text question;
+
     [SerializeField]
     private GameObject selectCanvasUI;
     [SerializeField]
@@ -26,11 +28,25 @@ public class UIManager : MonoBehaviour
     private GameObject[] etcs;
 
     // Check Canvas
+    [Header("CheckUI")]
     [SerializeField]
     private GameObject checkCanvasUI;
 
+    // Color Canvas
+    [Header("ColorUI")]   
+    [SerializeField]
+    private GameObject chooseColorUI;
+    [SerializeField]
+    private GameObject[] palletColors;
+    [SerializeField]
+    private GameObject[] curColorsUI;
+    private bool isMainColor;
+    private Color32 mainColor;
+    private Color32 subColor;
+
     [SerializeField]
     private Animator animatorDraw;
+
     // 캔버스에 표시할 Sprite
     [SerializeField]
     private GameObject drawCanvas_Default;
@@ -56,6 +72,7 @@ public class UIManager : MonoBehaviour
         selectColorUI.SetActive(false);
         InitSelectPictureUI();
         checkCanvasUI.SetActive(false);
+        chooseColorUI.SetActive(false);
 
         etcs[0].SetActive(false);
         etcs[1].SetActive(false);
@@ -63,7 +80,11 @@ public class UIManager : MonoBehaviour
         drawCanvas_Color.GetComponent<SpriteRenderer>().sprite = null;
 
         sceneManager = GameObject.Find("SceneManager").GetComponent<SceneManager>();
-        sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI);
+        sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI, false);
+
+        mainColor = PictureColor.GetColor(EPictureColor.White);
+        subColor = PictureColor.GetColor(EPictureColor.White);
+        isMainColor = true;
     }
 
     private void InitSelectPictureUI()
@@ -97,9 +118,7 @@ public class UIManager : MonoBehaviour
         etcs[0].SetActive(false);
         etcs[1].SetActive(false);
 
-        checkCanvasUI.SetActive(true);
-
-        //sceneManager.ThinkPicture(question, "What's Color?", selectColorUI);
+        StartCoroutine(ShowCheckCanvasUI());
     }
 
     public void SetSelectPictureUI(bool _active)
@@ -107,7 +126,46 @@ public class UIManager : MonoBehaviour
         selectPictureUI.SetActive(_active);
     }
 
-    public void SelectColors(Image _colors)
+    public void SetETCUI(bool _active1, bool _active2)
+    {
+        etcs[0].SetActive(_active1);
+        etcs[1].SetActive(_active2);
+    }
+
+    // 색깔 정하기
+    public void SetSelectColorUI(bool _active)
+    {
+        selectColorUI.SetActive(_active);
+    }
+
+    public void SetCurColor(bool _main)
+    {
+        isMainColor = _main;
+    }
+
+    public void SetColor(Image _img)
+    {
+        if(isMainColor) this.mainColor = _img.color;
+        else this.subColor = _img.color;   
+
+        ResetColorUI(); 
+    }
+
+    public void ResetColorUI()
+    {
+        palletColors[0].GetComponent<Image>().color = this.mainColor;
+        palletColors[1].GetComponent<Image>().color = this.subColor;
+
+        curColorsUI[0].GetComponent<Image>().color = this.mainColor;
+        curColorsUI[0].transform.GetChild(0).GetComponent<Text>().text = PictureColor.GetColorName(curColorsUI[0].GetComponent<Image>().color);
+        curColorsUI[0].transform.GetChild(0).GetComponent<Text>().color = this.mainColor;
+
+        curColorsUI[1].GetComponent <Image>().color = this.subColor;
+        curColorsUI[1].transform.GetChild(0).GetComponent<Text>().text = PictureColor.GetColorName(curColorsUI[1].GetComponent<Image>().color);
+        curColorsUI[1].transform.GetChild(0).GetComponent<Text>().color = this.subColor;
+    }
+
+    public void SelectColors()
     {
         question.text = "";
         selectColorUI.SetActive(false);
@@ -120,29 +178,22 @@ public class UIManager : MonoBehaviour
             animatorDraw.SetTrigger("Draw_Color");
             drawCanvas_Color.GetComponent<SpriteRenderer>().sprite = curPicture.GetPictureColor();
             drawCanvas_Color.GetComponent<SpriteRenderer>().material = M_picture;
-            drawCanvas_Color.GetComponent<SpriteRenderer>().material.SetColor("_PictureColor1", Color.green);
-            drawCanvas_Color.GetComponent<SpriteRenderer>().material.SetColor("_PictureColor2", _colors.color);
+            drawCanvas_Color.GetComponent<SpriteRenderer>().material.SetColor("_PictureColor1", mainColor);
+            drawCanvas_Color.GetComponent<SpriteRenderer>().material.SetColor("_PictureColor2", subColor);
 
-            checkCanvasUI.SetActive(true);
+            StartCoroutine(ShowCheckCanvasUI());
         }
     }
 
-    public void SetSelectColorUI(bool _active)
-    {
-        selectColorUI.SetActive(_active);
-    }
-
-    public void SetETCUI(bool _active1, bool _active2)
-    {
-        etcs[0].SetActive(_active1);
-        etcs[1].SetActive(_active2);
-    }
-
+    // 그림 그리고 난 후
     public void ReDraw()
     {
         checkCanvasUI.SetActive(false);
-        if(stage == 0) sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI);
-        else if (stage == 1) sceneManager.ThinkPicture(question, "What's Color?", selectColorUI);
+        if (stage == 0) sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI, false);
+        else if (stage == 1)
+        {
+            sceneManager.ThinkPicture(question, "What's Color?", selectColorUI, true);
+        }
     }
 
 
@@ -151,7 +202,7 @@ public class UIManager : MonoBehaviour
         checkCanvasUI.SetActive(false);
         if (stage == 0)
         {
-            sceneManager.ThinkPicture(question, "What's Color?", selectColorUI);
+            sceneManager.ThinkPicture(question, "What's Color?", selectColorUI, true);
             stage++;
         }
         else if (stage == 1)
@@ -159,5 +210,11 @@ public class UIManager : MonoBehaviour
             // SceneManager에서 엔딩 보기
             playerAnim.SetTrigger("Done");
         }
+    }
+
+    IEnumerator ShowCheckCanvasUI()
+    {
+        yield return new WaitForSeconds(4f);
+        checkCanvasUI.SetActive(true);
     }
 }

@@ -17,12 +17,12 @@ public class SceneManager : MonoBehaviour
 
 
 
-    public void ThinkPicture(Text _textUI, string _text, GameObject _selectUI)
+    public void ThinkPicture(Text _textUI, string _text, GameObject _selectUI, bool _option)
     {
-        StartCoroutine(ThinkPictureCoroutine(_textUI, _text, _selectUI));
+        StartCoroutine(ThinkPictureCoroutine(_textUI, _text, _selectUI, _option));
     }
 
-    IEnumerator ThinkPictureCoroutine(Text _textUI, string _text, GameObject _selectUI)
+    IEnumerator ThinkPictureCoroutine(Text _textUI, string _text, GameObject _selectUI, bool _option)
     {
         yield return new WaitForSeconds(1f);
         uiManager.SetETCUI(true, false);
@@ -34,6 +34,7 @@ public class SceneManager : MonoBehaviour
         StartCoroutine(Typing(_textUI, _text));
         yield return new WaitForSeconds(1f);
         _selectUI.SetActive(true);
+        if (_option) uiManager.ResetColorUI();
     }
 
     // 자막 타이핑 이펙트
