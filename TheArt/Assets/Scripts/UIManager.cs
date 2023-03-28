@@ -9,11 +9,6 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Pitcure[] pictures;
 
-    // 단계
-    // 1) 밑그림
-    // 2) 색칠
-    private int stage;
-
     // Select Canvas UI
     [SerializeField]
     private Text question;
@@ -60,12 +55,8 @@ public class UIManager : MonoBehaviour
 
     private SceneManager sceneManager;
 
-    [SerializeField]
-    private Animator playerAnim;
-
     private void Start()
     {
-        stage = 0;
         question.text = "";
 
         curPicture = null;
@@ -80,7 +71,6 @@ public class UIManager : MonoBehaviour
         drawCanvas_Color.GetComponent<SpriteRenderer>().sprite = null;
 
         sceneManager = GameObject.Find("SceneManager").GetComponent<SceneManager>();
-        sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI, false);
 
         mainColor = PictureColor.GetColor(EPictureColor.White);
         subColor = PictureColor.GetColor(EPictureColor.White);
@@ -189,8 +179,11 @@ public class UIManager : MonoBehaviour
     public void ReDraw()
     {
         checkCanvasUI.SetActive(false);
-        if (stage == 0) sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI, false);
-        else if (stage == 1)
+        if (sceneManager.GetCurSceneIndex() == 1)
+        {
+            sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI, false);
+        }
+        else if (sceneManager.GetCurSceneIndex() == 2)
         {
             sceneManager.ThinkPicture(question, "What's Color?", selectColorUI, true);
         }
@@ -200,15 +193,15 @@ public class UIManager : MonoBehaviour
     public void Done()
     {
         checkCanvasUI.SetActive(false);
-        if (stage == 0)
+        if (sceneManager.GetCurSceneIndex() == 1)
         {
-            sceneManager.ThinkPicture(question, "What's Color?", selectColorUI, true);
-            stage++;
+            sceneManager.Scene02();
         }
-        else if (stage == 1)
+        else if (sceneManager.GetCurSceneIndex() == 2)
         {
             // SceneManager에서 엔딩 보기
-            playerAnim.SetTrigger("Done");
+            sceneManager.Ending_01();
+            //playerAnim.SetTrigger("Done");
         }
     }
 
@@ -217,4 +210,8 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(4f);
         checkCanvasUI.SetActive(true);
     }
+
+    public Text GetQuestion() { return question; }
+    public GameObject GetSelectPictureUI() { return selectPictureUI; }
+    public GameObject GetSelectColorUI() { return selectColorUI; }
 }
