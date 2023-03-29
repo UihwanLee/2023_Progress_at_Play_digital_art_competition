@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class SceneManager : MonoBehaviour
 {
@@ -21,9 +22,15 @@ public class SceneManager : MonoBehaviour
 
     [Header("Ending")]
     [SerializeField]
+    private GameObject Ending01UI;
+    [SerializeField]
     private GameObject[] Ending03TextUI;
     [SerializeField]
     private GameObject[] Ending03UI;
+
+    [Header("Camera")]
+    [SerializeField]
+    private Camera mainCamera;
 
     // Start is called before the first frame update
     void Start()
@@ -38,10 +45,16 @@ public class SceneManager : MonoBehaviour
 
         // Scene0 시작
         Scene01();
+        mainCamera.orthographicSize = 5;
     }
 
     private void InitEnding()
     {
+        Ending01UI.SetActive(true);
+        Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
+        Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().material = null;
+        Ending01UI.SetActive(false);
+
 
         Ending03TextUI[0].SetActive(true);
         Ending03TextUI[1].SetActive(true);
@@ -55,6 +68,8 @@ public class SceneManager : MonoBehaviour
         Ending03UI[1].SetActive(true);
         Ending03UI[2].SetActive(true);
 
+        Ending03UI[2].GetComponent<SpriteRenderer>().sprite = null;
+        Ending03UI[2].GetComponent<SpriteRenderer>().material = null;
         Color tmp = Ending03UI[2].GetComponent<SpriteRenderer>().color;
         tmp.a = 0f;
         Ending03UI[2].GetComponent<SpriteRenderer>().color = tmp;
@@ -246,12 +261,68 @@ public class SceneManager : MonoBehaviour
         Loading();
 
 
-        yield return new WaitForSeconds(10f);
+        yield return SECOND_THREE;
+        mainCamera.orthographicSize = 1.32f;
+        yield return SECOND_ONE;
+        Ending_02();
+    }
+
+    // Ending2
+    public void Ending_02()
+    {
+        Ending01UI.SetActive(true);
+
+        // Canvas Set
+        SetCanvas(Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>());
+
+        StartCoroutine(Ending_02Coroutine());
+    }
+
+    IEnumerator Ending_02Coroutine()
+    {
+        var SECOND_ONE = new WaitForSeconds(1f);
+        var SECOND_THREE = new WaitForSeconds(3f);
+        var SECOND_FIVE = new WaitForSeconds(5f);
+
+        yield return SECOND_FIVE;
+
+
+        // Camera Zoom Out
+
+        // Start -> 1.32 
+        // End -> 20
+
+        float counter = 0.0f;
+        float start = 1.32f, end = 12.0f;
+        float duration = 15.0f;
+
+
+        while (counter < duration)
+        {
+            counter += Time.deltaTime;
+            mainCamera.orthographicSize = Mathf.Lerp(start, end, counter / duration);
+
+            yield return null;
+        }
+
+
+        yield return SECOND_FIVE;
+
+        // Player 화면 비추기
+
+        mainCamera.orthographicSize = 5f;
         Ending_03();
     }
 
     public void Ending_03()
     {
+        Ending03UI[0].SetActive(true);
+        Ending03TextUI[0].SetActive(true);
+        Ending03UI[2].SetActive(true);
+
+        // Canvas Set
+        SetCanvas(Ending03UI[2].GetComponent<SpriteRenderer>());
+
         StartCoroutine(Ending_03Coroutine());
     }
 
@@ -262,18 +333,12 @@ public class SceneManager : MonoBehaviour
         var SECOND_FIVE = new WaitForSeconds(5f);
 
 
-
-        Ending03UI[0].SetActive(true);
-        Ending03TextUI[0].SetActive(true);
-
-        Ending03UI[2].SetActive(true);
-
         // 완성된 그림 불러오기
 
         // Picture Drawing
-        StartCoroutine(FadePictureCourtine(Ending03UI[2].GetComponent<SpriteRenderer>(), 0, 1, 7f));
+        StartCoroutine(FadePictureCourtine(Ending03UI[2].GetComponent<SpriteRenderer>(), 0, 1, 5f));
 
-        yield return SECOND_THREE;
+        yield return SECOND_FIVE;
 
         CanvasGroup cg = Ending03TextUI[2].GetComponent<CanvasGroup>();
         StartCoroutine(FadeCourtine(cg, cg.alpha, 1, 2f));
@@ -315,6 +380,14 @@ public class SceneManager : MonoBehaviour
             //textBox.GetComponent<Text>().text = text.Substring(0, i);
             yield return new WaitForSeconds(_time);
         }
+    }
+
+    public void SetCanvas(SpriteRenderer _sr)
+    {
+        _sr.sprite = uiManager.GetCurSprite();
+        _sr.material = uiManager.GetMaterial();
+        _sr.material.SetColor("_PictureColor1", uiManager.GetMainColor());
+        _sr.material.SetColor("_PictureColor2", uiManager.GetSubColor());
     }
 
     public int GetCurSceneIndex() { return sceneIndex; }

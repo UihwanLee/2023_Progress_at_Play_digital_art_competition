@@ -39,6 +39,8 @@ public class UIManager : MonoBehaviour
     private Color32 mainColor;
     private Color32 subColor;
 
+    private Sprite curSprite;
+
     [SerializeField]
     private Animator animatorDraw;
 
@@ -75,6 +77,8 @@ public class UIManager : MonoBehaviour
         mainColor = PictureColor.GetColor(EPictureColor.White);
         subColor = PictureColor.GetColor(EPictureColor.White);
         isMainColor = true;
+
+        curSprite = null;
     }
 
     private void InitSelectPictureUI()
@@ -166,6 +170,7 @@ public class UIManager : MonoBehaviour
         if (curPicture != null)
         {
             animatorDraw.SetTrigger("Draw_Color");
+            curSprite = curPicture.GetPictureColor();
             drawCanvas_Color.GetComponent<SpriteRenderer>().sprite = curPicture.GetPictureColor();
             drawCanvas_Color.GetComponent<SpriteRenderer>().material = M_picture;
             drawCanvas_Color.GetComponent<SpriteRenderer>().material.SetColor("_PictureColor1", mainColor);
@@ -214,4 +219,10 @@ public class UIManager : MonoBehaviour
     public Text GetQuestion() { return question; }
     public GameObject GetSelectPictureUI() { return selectPictureUI; }
     public GameObject GetSelectColorUI() { return selectColorUI; }
+
+    public Color32 GetMainColor() { return mainColor; }
+    public Color32 GetSubColor() { return subColor; }  
+
+    public Sprite GetCurSprite() { return curSprite; }  
+    public Material GetMaterial() { return M_picture; }
 }
