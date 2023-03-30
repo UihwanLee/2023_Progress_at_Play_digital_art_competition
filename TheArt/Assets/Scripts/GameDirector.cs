@@ -1,24 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameDirector : MonoBehaviour
 {
-    [Header("UI")]
-    [SerializeField]
-    private int size;
-
-
-
-    // Start is called before the first frame update
-    void Start()
+    public void LoadScene()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        //UnityEngine.SceneManagement.LoadScene();
+        //Scene
     }
 }

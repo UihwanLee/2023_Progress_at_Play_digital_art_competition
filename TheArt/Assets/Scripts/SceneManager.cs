@@ -12,6 +12,8 @@ public class SceneManager : MonoBehaviour
 
     [SerializeField]
     private GameObject loadingUI;
+    [SerializeField]
+    private GameObject startScene;
 
     // Player
     [Header("Player")]
@@ -19,10 +21,16 @@ public class SceneManager : MonoBehaviour
     private GameObject playerTextUI;
     [SerializeField]
     private Animator playerAnim;
+    [SerializeField]
+    private Animator playerRAnim;
+    [SerializeField]
+    private GameObject playerLastMessage;
 
     [Header("Ending")]
     [SerializeField]
     private GameObject Ending01UI;
+    [SerializeField]
+    private GameObject Ending02FadeUI;
     [SerializeField]
     private GameObject[] Ending03TextUI;
     [SerializeField]
@@ -38,13 +46,15 @@ public class SceneManager : MonoBehaviour
         sceneIndex = 0;
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
 
+        startScene.SetActive(false);
+
         InitPlayerTextUI();
         InitEnding();
 
         resetAlpha(loadingUI);
 
         // Scene0 시작
-        Scene01();
+        Scene00();
         mainCamera.orthographicSize = 5;
     }
 
@@ -53,6 +63,11 @@ public class SceneManager : MonoBehaviour
         Ending01UI.SetActive(true);
         Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
         Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().material = null;
+
+        resetAlpha(Ending02FadeUI);
+        playerLastMessage.SetActive(true);
+        playerLastMessage.GetComponent<Text>().text = "";
+        playerLastMessage.SetActive(false);
         Ending01UI.SetActive(false);
 
 
@@ -62,6 +77,8 @@ public class SceneManager : MonoBehaviour
         Ending03TextUI[2].GetComponent<CanvasGroup>().alpha = 0.0f;
         Ending03TextUI[3].SetActive(true);
         Ending03TextUI[3].GetComponent<CanvasGroup>().alpha = 0.0f;
+        Ending03TextUI[4].SetActive(true);
+        Ending03TextUI[4].GetComponent<Text>().text = "";
         Ending03TextUI[0].SetActive(false);
 
         Ending03UI[0].SetActive(true);
@@ -129,6 +146,28 @@ public class SceneManager : MonoBehaviour
 
     // Scene0 : 공모전을 찾아보고 InGame 이동
 
+    public void Scene00()
+    {
+        startScene.SetActive(true);
+        StartCoroutine(Scene00Coroutine());
+    }
+
+    IEnumerator Scene00Coroutine()
+    {
+        var SECOND_TEN = new WaitForSeconds(10f);
+
+
+        yield return SECOND_TEN;
+
+        // Fade in/out
+        Loading();
+
+        yield return new WaitForSeconds(4f);
+
+        Scene01();
+        startScene.SetActive(false);
+    }
+
     // Scene1 : 무엇을 그릴지 생각
     public void Scene01()
     {
@@ -158,7 +197,7 @@ public class SceneManager : MonoBehaviour
         yield return SECOND_THREE;
         playerTextUI.SetActive(false);
 
-        ThinkPicture(uiManager.GetQuestion(), "What's Draw?", uiManager.GetSelectPictureUI(), false);
+        ThinkPicture(uiManager.GetQuestion(), "What should I draw?", uiManager.GetSelectPictureUI(), false);
     }
 
     // Scene2 : 어떤 색깔 조합으로 색칠할지 생각
@@ -189,7 +228,7 @@ public class SceneManager : MonoBehaviour
         yield return SECOND_THREE;
         playerTextUI.SetActive(false);
 
-        ThinkPicture(uiManager.GetQuestion(), "What's Color?", uiManager.GetSelectColorUI(), true);
+        ThinkPicture(uiManager.GetQuestion(), "What about color combinations?", uiManager.GetSelectColorUI(), true);
     }
 
     public void ThinkPicture(Text _textUI, string _text, GameObject _selectUI, bool _option)
@@ -309,8 +348,43 @@ public class SceneManager : MonoBehaviour
         yield return SECOND_FIVE;
 
         // Player 화면 비추기
+        // Camera  -24.8 -5.5 -10
+        //
 
-        mainCamera.orthographicSize = 5f;
+        counter = 0.0f;
+        duration = 10.0f;
+        start = 12.0f; end = 5.0f;
+
+        Vector3 startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
+        Vector3 endPos = new Vector3(-24.8f, -5.5f, mainCamera.transform.position.z);
+
+        playerLastMessage.SetActive(true);
+        StartCoroutine(Typing(playerLastMessage.GetComponent<Text>(), "Why is it over there . . . ?", 0.15f));
+
+        Ending02FadeUI.SetActive(true);
+        while (counter < duration)
+        {
+            counter += Time.deltaTime;
+
+            // 카메라 줌 인 / 이동
+            mainCamera.orthographicSize = Mathf.Lerp(start, end, counter / duration);
+            mainCamera.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
+
+            // 페이드 인
+            Color tmp = Ending02FadeUI.GetComponent<SpriteRenderer>().color;
+            tmp.a = Mathf.Lerp(0, 1, counter / duration);
+            Ending02FadeUI.GetComponent<SpriteRenderer>().color = tmp;
+
+            yield return null;
+        }
+
+        // 플레이어 눈물 고이기
+        playerRAnim.SetTrigger("Tear");
+
+        yield return SECOND_FIVE;
+
+        playerLastMessage.GetComponent<Text>().text = "";
+        mainCamera.transform.position = new Vector3(0.0f, 0.0f, -10.0f);
         Ending_03();
     }
 
@@ -347,6 +421,15 @@ public class SceneManager : MonoBehaviour
 
         cg = Ending03TextUI[3].GetComponent<CanvasGroup>();
         StartCoroutine(FadeCourtine(cg, cg.alpha, 1, 2f));
+
+        yield return SECOND_THREE;
+
+        string message = "Whose work is it ?";
+        for (int i = 0; i <= message.Length; i++)
+        {
+            Ending03TextUI[4].GetComponent<Text>().text = message.Substring(0, i);
+            yield return new WaitForSeconds(0.1f);
+        }
 
         yield return SECOND_FIVE;
 
