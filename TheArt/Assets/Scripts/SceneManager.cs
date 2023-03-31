@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
+//using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class SceneManager : MonoBehaviour
 {
@@ -20,9 +22,9 @@ public class SceneManager : MonoBehaviour
     [SerializeField]
     private GameObject playerTextUI;
     [SerializeField]
-    private Animator playerAnim;
+    private Animator otherPlayerAnim;
     [SerializeField]
-    private Animator playerRAnim;
+    private Animator playerAnim;
     [SerializeField]
     private GameObject playerLastMessage;
 
@@ -197,7 +199,7 @@ public class SceneManager : MonoBehaviour
         yield return SECOND_THREE;
         playerTextUI.SetActive(false);
 
-        ThinkPicture(uiManager.GetQuestion(), "What should I draw?", uiManager.GetSelectPictureUI(), false);
+        ThinkPicture(uiManager.GetQuestion(), "What should I draw?", uiManager.GetSelectPictureUI(), 0);
     }
 
     // Scene2 : 어떤 색깔 조합으로 색칠할지 생각
@@ -228,18 +230,50 @@ public class SceneManager : MonoBehaviour
         yield return SECOND_THREE;
         playerTextUI.SetActive(false);
 
-        ThinkPicture(uiManager.GetQuestion(), "What about color combinations?", uiManager.GetSelectColorUI(), true);
+        ThinkPicture(uiManager.GetQuestion(), "What about color combinations?", uiManager.GetSelectColorUI(), 1);
     }
 
-    public void ThinkPicture(Text _textUI, string _text, GameObject _selectUI, bool _option)
+    // Scene3 : 작품 타이틀 설정
+    public void Scene03()
+    {
+        sceneIndex++;
+        StartCoroutine(Scene03Coroutine());
+    }
+
+    IEnumerator Scene03Coroutine()
+    {
+        var SECOND_ONE = new WaitForSeconds(1f);
+        var SECOND_THREE = new WaitForSeconds(3f);
+
+
+        yield return SECOND_ONE;
+
+        playerAnim.SetTrigger("OK");
+
+        yield return SECOND_THREE;
+
+        playerTextUI.SetActive(true);
+
+        string text = "I think it would be nice to decide on a title!";
+        StartCoroutine(Typing(playerTextUI.transform.GetChild(0).GetComponent<Text>(), text, 0.1f));
+
+        yield return SECOND_THREE;
+        yield return SECOND_THREE;
+        playerTextUI.SetActive(false);
+
+        ThinkPicture(uiManager.GetQuestion(), "What should be the title?", uiManager.GetSelectTitleUI(), 2);
+    }
+
+    public void ThinkPicture(Text _textUI, string _text, GameObject _selectUI, int _option)
     {
         StartCoroutine(ThinkPictureCoroutine(_textUI, _text, _selectUI, _option));
     }
 
-    IEnumerator ThinkPictureCoroutine(Text _textUI, string _text, GameObject _selectUI, bool _option)
+    IEnumerator ThinkPictureCoroutine(Text _textUI, string _text, GameObject _selectUI, int _option)
     {
         var SECOND_ONE = new WaitForSeconds(1f);
 
+        if (_option == 1) uiManager.InitSelectTitleUI();
         yield return SECOND_ONE;
         uiManager.SetETCUI(true, false);
         yield return new WaitForSeconds(0.5f);
@@ -250,7 +284,7 @@ public class SceneManager : MonoBehaviour
         StartCoroutine(Typing(_textUI, _text, 0.05f));
         yield return SECOND_ONE;
         _selectUI.SetActive(true);
-        if (_option) uiManager.ResetColorUI();
+        if (_option == 1) uiManager.ResetColorUI();
     }
 
     // Ending1
@@ -273,34 +307,57 @@ public class SceneManager : MonoBehaviour
 
         playerTextUI.SetActive(true);
 
-        string text1 = "It's Done";
-        string text2 = " . . . ?";
-        for (int i = 0; i <= text1.Length; i++)
+        string text = "nice this is perfect!";
+        for (int i = 0; i <= text.Length; i++)
         {
-            playerTextUI.transform.GetChild(0).GetComponent<Text>().text = text1.Substring(0, i);
+            playerTextUI.transform.GetChild(0).GetComponent<Text>().text = text.Substring(0, i);
             yield return new WaitForSeconds(0.1f);
-        }
-        for (int i = 0; i <= text2.Length; i++)
-        {
-            playerTextUI.transform.GetChild(0).GetComponent<Text>().text = text1 + text2.Substring(0, i);
-            yield return new WaitForSeconds(0.15f);
         }
 
         yield return SECOND_THREE;
         playerTextUI.SetActive(false);
 
-        yield return SECOND_ONE;
-
-
-        playerAnim.SetTrigger("Done");
         yield return SECOND_FIVE;
 
+        // 18.8
+        float counter = 0.0f;
+        float duration = 8.0f;
+
+        Vector3 startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
+        Vector3 endPos = new Vector3(18.8f, mainCamera.transform.position.y, mainCamera.transform.position.z);
+
+        while (counter < duration)
+        {
+            counter += Time.deltaTime;
+
+            // 카메라 줌 이동
+            mainCamera.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
+            yield return null;
+        }
+
+        yield return SECOND_ONE;
+        // otherPlayer로 카메라 무빙 애니메이션 동작
+        otherPlayerAnim.SetTrigger("Done");
+        yield return SECOND_FIVE;
+
+        // CanvasTitle1 끄기
+        uiManager.SetCanvasTitlesActive(0, false);
 
         // Fade in/out
         Loading();
 
 
         yield return SECOND_THREE;
+
+        // OtherPlayer Copy 애니메이션
+
+
+
+
+
+
+
+        mainCamera.transform.position = new Vector3(0.0f, 0.0f, -10.0f);
         mainCamera.orthographicSize = 1.32f;
         yield return SECOND_ONE;
         Ending_02();
@@ -313,6 +370,10 @@ public class SceneManager : MonoBehaviour
 
         // Canvas Set
         SetCanvas(Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>());
+
+        // TitleSet
+        uiManager.SetCanvasTitlesActive(1, true);
+        SetTitle(uiManager.GetCanvasTitles(1), true);
 
         StartCoroutine(Ending_02Coroutine());
     }
@@ -359,7 +420,7 @@ public class SceneManager : MonoBehaviour
         Vector3 endPos = new Vector3(-24.8f, -5.5f, mainCamera.transform.position.z);
 
         playerLastMessage.SetActive(true);
-        StartCoroutine(Typing(playerLastMessage.GetComponent<Text>(), "Why is it over there . . . ?", 0.15f));
+        StartCoroutine(Typing(playerLastMessage.GetComponent<Text>(), "Why is she over there . . . ?", 0.15f));
 
         Ending02FadeUI.SetActive(true);
         while (counter < duration)
@@ -379,7 +440,7 @@ public class SceneManager : MonoBehaviour
         }
 
         // 플레이어 눈물 고이기
-        playerRAnim.SetTrigger("Tear");
+        playerAnim.SetTrigger("Tear");
 
         yield return SECOND_FIVE;
 
@@ -434,6 +495,8 @@ public class SceneManager : MonoBehaviour
         yield return SECOND_FIVE;
 
         // 시작 화면으로 돌아가기
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
     IEnumerator FadePictureCourtine(SpriteRenderer _sr , float _start, float _end, float _duration)
@@ -471,6 +534,69 @@ public class SceneManager : MonoBehaviour
         _sr.material = uiManager.GetMaterial();
         _sr.material.SetColor("_PictureColor1", uiManager.GetMainColor());
         _sr.material.SetColor("_PictureColor2", uiManager.GetSubColor());
+    }
+
+    public void SetTitle(GameObject _titleUI, bool _option)
+    {
+       
+        if(_option)
+        {
+            string title = uiManager.GetTitle();
+
+
+            // otherCanvas의 Title의 경우 뒤에 2가지 도치해서 배정
+            // 단, 바꾸려고 하는 문자가 달라야함
+
+            // Apple : 5
+            // 0 : A 
+            // 1 : p
+            // 2 : p
+            // 3 : l
+            // 4 : e
+
+            // 문자가 한문자로 통일되어 있는지 체크
+            bool isSame = false;
+
+            char ch = title[1];
+            for(int i=2; i < title.Length; i++)
+            {
+                if (!ch.Equals(title[i]))
+                {
+                    isSame = false;
+                }
+            }
+
+            if(isSame)
+            {
+                // 문자가 한문자로 통일되어 있다면 마지막에 글자 추가하여 마무리
+                title = title + "a";
+            }
+            else
+            {
+                int index1 = Random.Range(1, title.Length - 1);
+                int index2 = Random.Range(1, title.Length - 1);
+
+                while (index2 == index1 || title[index1].Equals(title[index2]))
+                {
+                    index2 = Random.Range(1, title.Length - 1);
+                }
+
+                // 도치
+                StringBuilder sb = new StringBuilder(title);
+                char tmp = sb[index1];
+                sb[index1] = title[index2];
+                sb[index2] = tmp;
+
+                title = sb.ToString();
+            }
+
+
+            _titleUI.GetComponent<Text>().text = "<" + title + ">";
+        }
+        else
+        {
+            _titleUI.GetComponent<Text>().text = "<" + uiManager.GetTitle() + ">";
+        }
     }
 
     public int GetCurSceneIndex() { return sceneIndex; }

@@ -7,7 +7,12 @@ public class GameDirector : MonoBehaviour
 {
     public void LoadScene()
     {
-        //UnityEngine.SceneManagement.LoadScene();
-        //Scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
+
 }

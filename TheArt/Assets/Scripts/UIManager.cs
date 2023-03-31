@@ -20,6 +20,8 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameObject selectColorUI;
     [SerializeField]
+    private GameObject selectTitleUI;
+    [SerializeField]
     private GameObject[] etcs;
 
     // Check Canvas
@@ -40,6 +42,22 @@ public class UIManager : MonoBehaviour
     private Color32 subColor;
 
     private Sprite curSprite;
+
+    // Title Canvas
+    [Header("TitleUI")]
+    [SerializeField]
+    private Text title;
+    [SerializeField]
+    private GameObject inputTitle;
+    [SerializeField]
+    private Text warningText;
+    [SerializeField]
+    private Animator inputFieldAnimator;
+
+    private string curTitle;
+
+    [SerializeField]
+    private GameObject[] canvaseTitles;
 
     [SerializeField]
     private Animator animatorDraw;
@@ -64,6 +82,7 @@ public class UIManager : MonoBehaviour
         curPicture = null;
         selectColorUI.SetActive(false);
         InitSelectPictureUI();
+        InitSelectTitleUI();
         checkCanvasUI.SetActive(false);
         chooseColorUI.SetActive(false);
 
@@ -78,6 +97,15 @@ public class UIManager : MonoBehaviour
         subColor = PictureColor.GetColor(EPictureColor.White);
         isMainColor = true;
 
+        
+        for(int i=0; i<canvaseTitles.Length; i++)
+        {
+            canvaseTitles[i].SetActive(true);
+            canvaseTitles[i].GetComponent<Text>().text = "";
+            canvaseTitles[i].SetActive(false);
+        }
+
+        curTitle = null;
         curSprite = null;
     }
 
@@ -180,17 +208,99 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void InitSelectTitleUI()
+    {
+        selectCanvasUI.SetActive(true);
+        selectTitleUI.SetActive(true);
+        SetSelectTitleUI();
+        inputTitle.GetComponent<Text>().text = "";
+        warningText.text = "";
+        selectTitleUI.SetActive(false);
+        selectCanvasUI.SetActive(false);
+    }
+
+    public void SetSelectTitleUI()
+    {
+        if(curPicture)
+        {
+            if (curTitle == null)
+            {
+                title.text = "<" + curPicture.GetPictureTitle() + ">";
+                curTitle = curPicture.GetPictureTitle();
+            }
+            else title.text = "<" + curTitle + ">";
+        }
+        else
+        {
+            title.text = "";
+        }
+    }
+
+    // 타이틀 입력 후 타이틀 검사
+    public void CheckTitle()
+    {
+        if (inputTitle.GetComponent<Text>().text != "" && inputTitle.GetComponent<Text>().text.Length > 2 && inputTitle.GetComponent<Text>().text.Length <= 10)
+        {
+            warningText.text = "";
+            curTitle = inputTitle.GetComponent<Text>().text;
+            inputTitle.GetComponent<Text>().text = "";
+            SetSelectTitleUI();
+        }
+        else
+        {
+            // 애니메이션 재생
+            inputFieldAnimator.SetTrigger("warning");
+            if(inputTitle.GetComponent<Text>().text == "")
+            {
+                warningText.text = "I should think about Title!";
+            }
+            else if(inputTitle.GetComponent<Text>().text.Length <= 2)
+            {
+                warningText.text = "I think this is too short!";
+            }
+            else if(inputTitle.GetComponent<Text>().text.Length > 10)
+            {
+                warningText.text = "I think this is too long!";
+            }
+        }
+    }
+
+    // Ok 버튼 누른 후
+    public void SelectTitle()
+    {
+        etcs[0].SetActive(false);
+        etcs[1].SetActive(false);
+
+        if (title.text != "")
+        {
+            InitSelectTitleUI();
+
+            canvaseTitles[0].SetActive(true);
+            canvaseTitles[0].GetComponent<Text>().text = "Title: <" + curTitle + ">";
+
+
+
+            selectTitleUI.SetActive(false);
+
+            StartCoroutine(ShowCheckCanvasUI());
+        }
+    }
+
     // 그림 그리고 난 후
     public void ReDraw()
     {
         checkCanvasUI.SetActive(false);
         if (sceneManager.GetCurSceneIndex() == 1)
         {
-            sceneManager.ThinkPicture(question, "What's Draw?", selectPictureUI, false);
+            sceneManager.ThinkPicture(question, "What should I draw?", selectPictureUI, 0);
         }
         else if (sceneManager.GetCurSceneIndex() == 2)
         {
-            sceneManager.ThinkPicture(question, "What's Color?", selectColorUI, true);
+            sceneManager.ThinkPicture(question, "What about color combinations?", selectColorUI, 1);
+        }
+        else if (sceneManager.GetCurSceneIndex() == 3)
+        {
+            sceneManager.ThinkPicture(question, "What should be the title?", selectTitleUI, 1);
         }
     }
 
@@ -204,9 +314,12 @@ public class UIManager : MonoBehaviour
         }
         else if (sceneManager.GetCurSceneIndex() == 2)
         {
+            sceneManager.Scene03();
+        }
+        else if(sceneManager.GetCurSceneIndex() == 3)
+        {
             // SceneManager에서 엔딩 보기
             sceneManager.Ending_01();
-            //playerAnim.SetTrigger("Done");
         }
     }
 
@@ -219,10 +332,26 @@ public class UIManager : MonoBehaviour
     public Text GetQuestion() { return question; }
     public GameObject GetSelectPictureUI() { return selectPictureUI; }
     public GameObject GetSelectColorUI() { return selectColorUI; }
+    public GameObject GetSelectTitleUI() { return selectTitleUI; }
 
     public Color32 GetMainColor() { return mainColor; }
     public Color32 GetSubColor() { return subColor; }  
 
     public Sprite GetCurSprite() { return curSprite; }  
     public Material GetMaterial() { return M_picture; }
+    public string GetTitle() { return curTitle; }
+
+    public GameObject GetCanvasTitles(int _index)
+    {
+        if (_index < canvaseTitles.Length) return canvaseTitles[_index];
+        else return null;
+    }
+
+    public void SetCanvasTitlesActive(int _index, bool _active)
+    {
+        if (_index < canvaseTitles.Length)
+        {
+            canvaseTitles[_index].SetActive(_active);
+        }
+    }
 }
