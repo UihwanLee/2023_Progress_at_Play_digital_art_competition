@@ -26,6 +26,8 @@ public class SceneManager : MonoBehaviour
     [SerializeField]
     private Animator playerAnim;
     [SerializeField]
+    private Animator playerAnim2;
+    [SerializeField]
     private GameObject playerLastMessage;
 
     [Header("Ending")]
@@ -317,7 +319,7 @@ public class SceneManager : MonoBehaviour
         yield return SECOND_THREE;
         playerTextUI.SetActive(false);
 
-        yield return SECOND_FIVE;
+        yield return SECOND_ONE;
 
         // 18.8
         float counter = 0.0f;
@@ -402,6 +404,10 @@ public class SceneManager : MonoBehaviour
             counter += Time.deltaTime;
             mainCamera.orthographicSize = Mathf.Lerp(start, end, counter / duration);
 
+            // canvasTitle 스케일 조정
+            float scale = Mathf.Lerp(1f, 0.5f, counter / duration);
+            uiManager.GetCanvasTitles(1).transform.localScale = new Vector3(scale, scale, 1);
+
             yield return null;
         }
 
@@ -427,6 +433,10 @@ public class SceneManager : MonoBehaviour
         {
             counter += Time.deltaTime;
 
+            // canvasTitle 스케일 조정
+            float scale = Mathf.Lerp(0.5f, 1f, counter / duration);
+            uiManager.GetCanvasTitles(1).transform.localScale = new Vector3(scale, scale, 1);
+
             // 카메라 줌 인 / 이동
             mainCamera.orthographicSize = Mathf.Lerp(start, end, counter / duration);
             mainCamera.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
@@ -438,9 +448,8 @@ public class SceneManager : MonoBehaviour
 
             yield return null;
         }
-
         // 플레이어 눈물 고이기
-        playerAnim.SetTrigger("Tear");
+        playerAnim2.SetTrigger("Tear");
 
         yield return SECOND_FIVE;
 
@@ -591,11 +600,11 @@ public class SceneManager : MonoBehaviour
             }
 
 
-            _titleUI.GetComponent<Text>().text = "<" + title + ">";
+            _titleUI.GetComponent<Text>().text = "Title: <" + title + ">";
         }
         else
         {
-            _titleUI.GetComponent<Text>().text = "<" + uiManager.GetTitle() + ">";
+            _titleUI.GetComponent<Text>().text = "Title: <" + uiManager.GetTitle() + ">";
         }
     }
 

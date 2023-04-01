@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIAttach : MonoBehaviour
 {
@@ -16,6 +17,12 @@ public class UIAttach : MonoBehaviour
     private float smootingX; // = 0.01f;
     private float smootingY; // = 0.03f;
 
+    private float orthoOrg;
+    private float orthoCurr;
+    private Vector3 scaleOrg;
+    private Vector3 posOrg;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,6 +32,12 @@ public class UIAttach : MonoBehaviour
 
         smootingX = 0.1f;
         smootingY = 0.1f;
+
+
+        orthoOrg = Camera.main.orthographicSize;
+        orthoCurr = orthoOrg;
+        scaleOrg = transform.localScale;
+        posOrg = Camera.main.WorldToViewportPoint(transform.position);
     }
 
     // Update is called once per frame
@@ -39,11 +52,19 @@ public class UIAttach : MonoBehaviour
         {
             targetPosX = Camera.main.WorldToScreenPoint(attachObj.transform.position + movePosX).x;
             targetPosY = Camera.main.WorldToScreenPoint(attachObj.transform.position + movePosY).y;
-
-            //float smoothPosX = Mathf.Lerp(this.transform.position.x, targetPosX, smootingX);
-            //float smoothPosY = Mathf.Lerp(this.transform.position.y, targetPosY, smootingY);
             this.transform.position = new Vector3(targetPosX, targetPosY, 0.0f);
 
+        }
+    }
+
+    private void SetScale()
+    {
+        var osize = Camera.main.orthographicSize;
+        if (orthoCurr != osize)
+        {
+            transform.localScale = scaleOrg * osize / orthoOrg;
+            orthoCurr = osize;
+            transform.position = Camera.main.ViewportToWorldPoint(posOrg);
         }
     }
 }
