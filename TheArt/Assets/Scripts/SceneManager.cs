@@ -4,8 +4,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
-//using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class SceneManager : MonoBehaviour
 {
@@ -30,9 +28,31 @@ public class SceneManager : MonoBehaviour
     [SerializeField]
     private GameObject playerLastMessage;
 
-    [Header("Ending")]
+    [Header("Start")]
+    [SerializeField]
+    private GameObject playerStartMessage;
+
+    [Header("Ending01")]
     [SerializeField]
     private GameObject Ending01UI;
+    [SerializeField]
+    private GameObject[] homePageUI;
+    [SerializeField]
+    private GameObject otherPlayerThinkUI;
+    [SerializeField]
+    private GameObject otherPlayerComputerText;
+    [SerializeField]
+    private GameObject uploadPicture;
+    [SerializeField]
+    private GameObject line;
+    [SerializeField]
+    private GameObject mousePoint;
+    [SerializeField]
+    private Animator otherPlayerEndingAnim;
+
+    [Header("Ending02")]
+    [SerializeField]
+    private GameObject Ending02UI;
     [SerializeField]
     private GameObject Ending02FadeUI;
     [SerializeField]
@@ -51,6 +71,9 @@ public class SceneManager : MonoBehaviour
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
 
         startScene.SetActive(false);
+        playerStartMessage.SetActive(true);
+        playerStartMessage.transform.GetChild(0).GetComponent<Text>().text = "";
+        playerStartMessage.SetActive(false);
 
         InitPlayerTextUI();
         InitEnding();
@@ -65,14 +88,28 @@ public class SceneManager : MonoBehaviour
     private void InitEnding()
     {
         Ending01UI.SetActive(true);
-        Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
-        Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().material = null;
+        for(int i=0; i<homePageUI.Length; i++)
+        {
+            homePageUI[i].SetActive(false); 
+        }
+        uploadPicture.SetActive(false);
+        line.SetActive(false);
+        otherPlayerThinkUI.SetActive(false);
+        otherPlayerComputerText.SetActive(true);
+        otherPlayerComputerText.GetComponent<Text>().text = "";
+        otherPlayerComputerText.SetActive(false);
+        Ending01UI.SetActive(false);
+
+
+        Ending02UI.SetActive(true);
+        Ending02UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
+        Ending02UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().material = null;
 
         resetAlpha(Ending02FadeUI);
         playerLastMessage.SetActive(true);
         playerLastMessage.GetComponent<Text>().text = "";
         playerLastMessage.SetActive(false);
-        Ending01UI.SetActive(false);
+        Ending02UI.SetActive(false);
 
 
         Ending03TextUI[0].SetActive(true);
@@ -158,10 +195,17 @@ public class SceneManager : MonoBehaviour
 
     IEnumerator Scene00Coroutine()
     {
-        var SECOND_TEN = new WaitForSeconds(10f);
+        var SECOND_SIX = new WaitForSeconds(6f);
+        var SECOND_TWO = new WaitForSeconds(2f);
 
 
-        yield return SECOND_TEN;
+        yield return SECOND_SIX;
+        playerStartMessage.SetActive(true);
+        StartCoroutine(Typing(playerStartMessage.transform.GetChild(0).GetComponent<Text>(), "I want to enter this competition and win!", 0.1f));
+        yield return SECOND_SIX;
+
+        yield return SECOND_TWO;
+        playerStartMessage.SetActive(false);
 
         // Fade in/out
         Loading();
@@ -353,11 +397,164 @@ public class SceneManager : MonoBehaviour
 
         // OtherPlayer Copy 애니메이션
 
+        mainCamera.transform.position = new Vector3(0.0f, 0.0f, -10.0f);
+        Ending01UI.SetActive(true);
+        homePageUI[0].SetActive(true);
+
+        yield return SECOND_THREE;
+
+        // 생각 풍선 띄우기
+        yield return SECOND_ONE;
+        uiManager.SetETCUI(true, false);
+        yield return new WaitForSeconds(0.5f);
+        uiManager.SetETCUI(true, true);
+        yield return new WaitForSeconds(0.6f);
+        otherPlayerThinkUI.SetActive(true);
+
+        otherPlayerThinkUI.transform.GetChild(0).GetComponent<Image>().sprite = uiManager.GetCurSprite();
+        otherPlayerThinkUI.transform.GetChild(0).GetComponent<Image>().material = uiManager.GetMaterial();
+        otherPlayerThinkUI.transform.GetChild(0).GetComponent<Image>().material.SetColor("_PictureColor1", uiManager.GetMainColor());
+        otherPlayerThinkUI.transform.GetChild(0).GetComponent<Image>().material.SetColor("_PictureColor2", uiManager.GetSubColor());
+
+        yield return SECOND_THREE;
+
+        yield return SECOND_THREE;
+
+        otherPlayerThinkUI.SetActive(false);;
+        uiManager.SetETCUI(false, false);
+
+        // 타이핑
+        otherPlayerComputerText.SetActive(true);
+        StartCoroutine(Typing(otherPlayerComputerText.GetComponent<Text>(), " The Art A.I.", 0.1f));
+
+        yield return SECOND_FIVE;
+
+        // 마우스 포인트 이동
+        // 기본 (-5.46, 0.41) -> (1.39, 0.41)
+        startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
+        endPos = new Vector3(1.39f, mousePoint.transform.position.y, mousePoint.transform.position.z);
+        counter = 0.0f;
+        duration = 4.0f;
+
+        while (counter < duration)
+        {
+            counter += Time.deltaTime;
+            mousePoint.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
+            yield return null;
+        }
+
+        mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
+        yield return new WaitForSeconds(0.5f);
+        mousePoint.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
+
+        // 홈페이지 2
+        homePageUI[0].SetActive(false);
+        otherPlayerComputerText.SetActive(false);
+        homePageUI[1].SetActive(true);
+
+        yield return SECOND_ONE;
+
+        // 홈페이지 3
+        homePageUI[1].SetActive(false);
+        otherPlayerComputerText.SetActive(true);
+        homePageUI[2].SetActive(true);
 
 
+        yield return SECOND_THREE;
+
+        // 마우스 포인트 이동
+        // 기본 (1.39, 0.41) -> (-4.13, -0.45)
+        startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
+        endPos = new Vector3(-4.13f, -0.45f, mousePoint.transform.position.z);
+        counter = 0.0f;
+        duration = 4.0f;
+
+        while (counter < duration)
+        {
+            counter += Time.deltaTime;
+            mousePoint.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
+            yield return null;
+        }
+
+        yield return SECOND_ONE;
+
+        mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
+        yield return new WaitForSeconds(1f);
+        mousePoint.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
+
+        // 홈페이지 4
+        homePageUI[2].SetActive(false);
+        otherPlayerComputerText.SetActive(false);
+        homePageUI[3].SetActive(true);
 
 
+        yield return SECOND_THREE;
 
+        // 마우스 포인트 이동
+        // 기본 (-4.13, -0.45) -> (-5.45, 1.42)
+        startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
+        endPos = new Vector3(-5.45f, 1.42f, mousePoint.transform.position.z);
+        counter = 0.0f;
+        duration = 4.0f;
+
+        while (counter < duration)
+        {
+            counter += Time.deltaTime;
+            mousePoint.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
+            yield return null;
+        }
+
+        yield return SECOND_ONE;
+
+        mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
+        yield return new WaitForSeconds(1f);
+        mousePoint.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
+
+        // Picture Upload
+        uploadPicture.SetActive(true);
+        SetCanvas(uploadPicture.GetComponent<SpriteRenderer>());
+
+        yield return SECOND_FIVE;
+
+        // Create 누르고 OtherPlayer Anim 발동
+
+        // 마우스 포인트 이동
+        // 기본 (-5.45, 1.42) -> (-0.08, 1.42)
+        startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
+        endPos = new Vector3(-0.08f, 1.42f, mousePoint.transform.position.z);
+        counter = 0.0f;
+        duration = 4.0f;
+
+        while (counter < duration)
+        {
+            counter += Time.deltaTime;
+            mousePoint.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
+            yield return null;
+        }
+
+        yield return SECOND_ONE;
+
+        mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
+        yield return new WaitForSeconds(1f);
+        mousePoint.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
+
+        line.SetActive(true);
+
+        yield return SECOND_THREE;
+
+        otherPlayerEndingAnim.SetTrigger("Laugh");
+
+        yield return SECOND_FIVE;
+
+        // Ending_02 씬으로 이동
+
+        // Fade in/out
+        Loading();
+
+
+        yield return SECOND_THREE;
+
+        Ending01UI.SetActive(false);
 
         mainCamera.transform.position = new Vector3(0.0f, 0.0f, -10.0f);
         mainCamera.orthographicSize = 1.32f;
@@ -368,10 +565,11 @@ public class SceneManager : MonoBehaviour
     // Ending2
     public void Ending_02()
     {
-        Ending01UI.SetActive(true);
+        Ending02UI.SetActive(true);
 
         // Canvas Set
-        SetCanvas(Ending01UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>());
+        SetCanvas(Ending02UI.transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>());   // otherPlayer Canvas
+        SetCanvas(Ending02UI.transform.GetChild(10).transform.GetChild(0).GetComponent<SpriteRenderer>());  // player Canvas
 
         // TitleSet
         uiManager.SetCanvasTitlesActive(1, true);
@@ -399,13 +597,19 @@ public class SceneManager : MonoBehaviour
         float duration = 15.0f;
 
 
+        Vector3 startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
+        Vector3 endPos = new Vector3(0f,0f, mainCamera.transform.position.z);
+
         while (counter < duration)
         {
             counter += Time.deltaTime;
+
+            // 카메라 줌 인 / 이동
             mainCamera.orthographicSize = Mathf.Lerp(start, end, counter / duration);
+            mainCamera.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
 
             // canvasTitle 스케일 조정
-            float scale = Mathf.Lerp(1f, 0.5f, counter / duration);
+            float scale = Mathf.Lerp(1.0f, 0.5f, counter / duration);
             uiManager.GetCanvasTitles(1).transform.localScale = new Vector3(scale, scale, 1);
 
             yield return null;
@@ -422,11 +626,12 @@ public class SceneManager : MonoBehaviour
         duration = 10.0f;
         start = 12.0f; end = 5.0f;
 
-        Vector3 startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
-        Vector3 endPos = new Vector3(-24.8f, -5.5f, mainCamera.transform.position.z);
+        startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
+        endPos = new Vector3(-24.8f, -5.5f, mainCamera.transform.position.z);
 
         playerLastMessage.SetActive(true);
         StartCoroutine(Typing(playerLastMessage.GetComponent<Text>(), "Why is she over there . . . ?", 0.15f));
+
 
         Ending02FadeUI.SetActive(true);
         while (counter < duration)
@@ -448,10 +653,10 @@ public class SceneManager : MonoBehaviour
 
             yield return null;
         }
-        // 플레이어 눈물 고이기
-        playerAnim2.SetTrigger("Tear");
 
         yield return SECOND_FIVE;
+
+        uiManager.SetCanvasTitlesActive(1, false);
 
         playerLastMessage.GetComponent<Text>().text = "";
         mainCamera.transform.position = new Vector3(0.0f, 0.0f, -10.0f);

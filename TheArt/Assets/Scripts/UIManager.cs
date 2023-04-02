@@ -275,6 +275,8 @@ public class UIManager : MonoBehaviour
         {
             InitSelectTitleUI();
 
+            animatorDraw.SetTrigger("Draw_Title");
+
             canvaseTitles[0].SetActive(true);
             canvaseTitles[0].GetComponent<Text>().text = "Title: <" + curTitle + ">";
 
