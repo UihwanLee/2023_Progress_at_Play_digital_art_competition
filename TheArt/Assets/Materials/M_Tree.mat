@@ -58,7 +58,7 @@ Material:
     - Color_977ce51941b84cdebbb43e51eb7019e5: {r: 0.5882353, g: 0.2941177, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
-    - _PictureColor1: {r: 1, g: 1, b: 1, a: 1}
-    - _PictureColor2: {r: 1, g: 1, b: 1, a: 1}
+    - _PictureColor1: {r: 0, g: 0.6, b: 0, a: 1}
+    - _PictureColor2: {r: 0, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

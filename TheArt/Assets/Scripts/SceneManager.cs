@@ -198,8 +198,10 @@ public class SceneManager : MonoBehaviour
         var SECOND_SIX = new WaitForSeconds(6f);
         var SECOND_TWO = new WaitForSeconds(2f);
 
-
-        yield return SECOND_SIX;
+        yield return new WaitForSeconds(2.2f);
+        // 마우스 클릭 이벤트
+        if (AudioManager.instance.isAudioPlay) AudioManager.instance.PlaySE("MouseClick");
+        yield return new WaitForSeconds(3.8f);
         playerStartMessage.SetActive(true);
         StartCoroutine(Typing(playerStartMessage.transform.GetChild(0).GetComponent<Text>(), "I want to enter this competition and win!", 0.1f));
         yield return SECOND_SIX;
@@ -228,6 +230,8 @@ public class SceneManager : MonoBehaviour
         var SECOND_ONE = new WaitForSeconds(1f);
         var SECOND_THREE = new WaitForSeconds(3f);
 
+        // BGM 시작
+        if(AudioManager.instance.isAudioPlay) AudioManager.instance.PlayBGM("BackgroundSound");
 
         yield return SECOND_ONE;
 
@@ -342,6 +346,7 @@ public class SceneManager : MonoBehaviour
     IEnumerator Ending_01Coroutine()
     {
         var SECOND_ONE = new WaitForSeconds(1f);
+        var SECOND_TWO = new WaitForSeconds(2f);
         var SECOND_THREE = new WaitForSeconds(3f);
         var SECOND_FIVE = new WaitForSeconds(5f);
 
@@ -372,12 +377,23 @@ public class SceneManager : MonoBehaviour
         Vector3 startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
         Vector3 endPos = new Vector3(18.8f, mainCamera.transform.position.y, mainCamera.transform.position.z);
 
+        float currVol = AudioManager.instance.audioSourceBgm.volume;
+        float vol = 0.0f;
+
         while (counter < duration)
         {
             counter += Time.deltaTime;
 
-            // 카메라 줌 이동
+            // 카메라 이동
             mainCamera.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
+
+            // BGM 소리 줄이기
+            if (AudioManager.instance.isAudioPlay)
+            {
+                vol = Mathf.Lerp(currVol, 0.0f, counter / duration);
+                AudioManager.instance.SetAllBGMVolume(vol);
+            }
+
             yield return null;
         }
 
@@ -400,6 +416,13 @@ public class SceneManager : MonoBehaviour
         mainCamera.transform.position = new Vector3(0.0f, 0.0f, -10.0f);
         Ending01UI.SetActive(true);
         homePageUI[0].SetActive(true);
+
+        // BGM 틀기
+        if(AudioManager.instance.isAudioPlay) 
+        {
+            AudioManager.instance.PlayBGM("DarkBGM");
+            AudioManager.instance.audioSourceBgm.volume = currVol;
+        }
 
         yield return SECOND_THREE;
 
@@ -427,14 +450,14 @@ public class SceneManager : MonoBehaviour
         otherPlayerComputerText.SetActive(true);
         StartCoroutine(Typing(otherPlayerComputerText.GetComponent<Text>(), " The Art A.I.", 0.1f));
 
-        yield return SECOND_FIVE;
+        yield return SECOND_THREE;
 
         // 마우스 포인트 이동
         // 기본 (-5.46, 0.41) -> (1.39, 0.41)
         startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
         endPos = new Vector3(1.39f, mousePoint.transform.position.y, mousePoint.transform.position.z);
         counter = 0.0f;
-        duration = 4.0f;
+        duration = 2.0f;
 
         while (counter < duration)
         {
@@ -442,6 +465,9 @@ public class SceneManager : MonoBehaviour
             mousePoint.transform.position = Vector3.Lerp(startPos, endPos, counter / duration);
             yield return null;
         }
+
+        // 마우스 클릭 이벤트
+        if (AudioManager.instance.isAudioPlay) AudioManager.instance.PlaySE("MouseClick");
 
         mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
         yield return new WaitForSeconds(0.5f);
@@ -452,22 +478,20 @@ public class SceneManager : MonoBehaviour
         otherPlayerComputerText.SetActive(false);
         homePageUI[1].SetActive(true);
 
-        yield return SECOND_ONE;
-
         // 홈페이지 3
         homePageUI[1].SetActive(false);
         otherPlayerComputerText.SetActive(true);
         homePageUI[2].SetActive(true);
 
 
-        yield return SECOND_THREE;
+        yield return SECOND_TWO;
 
         // 마우스 포인트 이동
         // 기본 (1.39, 0.41) -> (-4.13, -0.45)
         startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
         endPos = new Vector3(-4.13f, -0.45f, mousePoint.transform.position.z);
         counter = 0.0f;
-        duration = 4.0f;
+        duration = 2.0f;
 
         while (counter < duration)
         {
@@ -476,7 +500,8 @@ public class SceneManager : MonoBehaviour
             yield return null;
         }
 
-        yield return SECOND_ONE;
+        // 마우스 클릭 이벤트
+        if (AudioManager.instance.isAudioPlay) AudioManager.instance.PlaySE("MouseClick");
 
         mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
         yield return new WaitForSeconds(1f);
@@ -488,14 +513,14 @@ public class SceneManager : MonoBehaviour
         homePageUI[3].SetActive(true);
 
 
-        yield return SECOND_THREE;
+        yield return SECOND_TWO;
 
         // 마우스 포인트 이동
         // 기본 (-4.13, -0.45) -> (-5.45, 1.42)
         startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
         endPos = new Vector3(-5.45f, 1.42f, mousePoint.transform.position.z);
         counter = 0.0f;
-        duration = 4.0f;
+        duration = 2.0f;
 
         while (counter < duration)
         {
@@ -504,7 +529,8 @@ public class SceneManager : MonoBehaviour
             yield return null;
         }
 
-        yield return SECOND_ONE;
+        // 마우스 클릭 이벤트
+        if (AudioManager.instance.isAudioPlay) AudioManager.instance.PlaySE("MouseClick");
 
         mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
         yield return new WaitForSeconds(1f);
@@ -514,7 +540,7 @@ public class SceneManager : MonoBehaviour
         uploadPicture.SetActive(true);
         SetCanvas(uploadPicture.GetComponent<SpriteRenderer>());
 
-        yield return SECOND_FIVE;
+        yield return SECOND_THREE;
 
         // Create 누르고 OtherPlayer Anim 발동
 
@@ -523,7 +549,7 @@ public class SceneManager : MonoBehaviour
         startPos = new Vector3(mousePoint.transform.position.x, mousePoint.transform.position.y, mousePoint.transform.position.z);
         endPos = new Vector3(-0.08f, 1.42f, mousePoint.transform.position.z);
         counter = 0.0f;
-        duration = 4.0f;
+        duration = 2.0f;
 
         while (counter < duration)
         {
@@ -532,7 +558,8 @@ public class SceneManager : MonoBehaviour
             yield return null;
         }
 
-        yield return SECOND_ONE;
+        // 마우스 클릭 이벤트
+        if (AudioManager.instance.isAudioPlay) AudioManager.instance.PlaySE("MouseClick");
 
         mousePoint.transform.localScale = new Vector3(0.09f, 0.09f, 1f);
         yield return new WaitForSeconds(1f);
@@ -540,7 +567,7 @@ public class SceneManager : MonoBehaviour
 
         line.SetActive(true);
 
-        yield return SECOND_THREE;
+        yield return SECOND_TWO;
 
         otherPlayerEndingAnim.SetTrigger("Laugh");
 
@@ -600,6 +627,9 @@ public class SceneManager : MonoBehaviour
         Vector3 startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
         Vector3 endPos = new Vector3(0f,0f, mainCamera.transform.position.z);
 
+        // 마우스 클릭 이벤트
+        if (AudioManager.instance.isAudioPlay) AudioManager.instance.PlaySE("Battle");
+
         while (counter < duration)
         {
             counter += Time.deltaTime;
@@ -623,7 +653,7 @@ public class SceneManager : MonoBehaviour
         //
 
         counter = 0.0f;
-        duration = 10.0f;
+        duration = 7.0f;
         start = 12.0f; end = 5.0f;
 
         startPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z);
@@ -708,8 +738,10 @@ public class SceneManager : MonoBehaviour
 
         yield return SECOND_FIVE;
 
-        // 시작 화면으로 돌아가기
+        // BGM 끄기
+        if (AudioManager.instance.isAudioPlay) AudioManager.instance.StopBGM();
 
+        // 시작 화면으로 돌아가기
         UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
