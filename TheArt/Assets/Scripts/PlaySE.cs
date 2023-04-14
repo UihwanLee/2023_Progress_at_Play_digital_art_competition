@@ -1,16 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class PlaySE : MonoBehaviour
+public class PlaySE : MonoBehaviour, IPointerEnterHandler
 {
-    // SE 사운드
+    [SerializeField]
+    private string SE;
 
-    public void PlayClickSound()
+    // SE 사운드
+    public void OnPointerEnter(PointerEventData eventData)
     {
-        if(AudioManager.instance.isAudioPlay)
-        {
-            AudioManager.instance.PlaySE("Click button");
-        }
+        AudioManager.instance.PlaySE(SE);
     }
 }

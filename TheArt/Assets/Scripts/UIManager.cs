@@ -71,12 +71,16 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Material M_picture;
 
+    public GameObject option;
+
     private Pitcure curPicture;
 
     private SceneManager sceneManager;
 
     private void Start()
     {
+        option.SetActive(false);
+
         question.text = "";
 
         curPicture = null;
@@ -97,8 +101,7 @@ public class UIManager : MonoBehaviour
         subColor = PictureColor.GetColor(EPictureColor.White);
         isMainColor = true;
 
-        
-        for(int i=0; i<canvaseTitles.Length; i++)
+        for (int i=0; i<canvaseTitles.Length; i++)
         {
             canvaseTitles[i].SetActive(true);
             canvaseTitles[i].GetComponent<Text>().text = "";
@@ -132,6 +135,9 @@ public class UIManager : MonoBehaviour
         curPicture = _pictureImage.GetComponent<SelectPicture>().GetCurPicture();
         drawCanvas_Default.GetComponent<SpriteRenderer>().sprite = _pictureImage.transform.GetChild(0).GetComponent<Image>().sprite;
         animatorDraw.SetTrigger("Draw_Default");
+
+        // 마우스 클릭 이벤트
+        AudioManager.instance.PlaySE("Brushing");
 
         question.text = "";
         InitSelectPictureUI();
@@ -198,6 +204,10 @@ public class UIManager : MonoBehaviour
         if (curPicture != null)
         {
             animatorDraw.SetTrigger("Draw_Color");
+
+            // 마우스 클릭 이벤트
+            AudioManager.instance.PlaySE("Brushing");
+
             curSprite = curPicture.GetPictureColor();
             drawCanvas_Color.GetComponent<SpriteRenderer>().sprite = curPicture.GetPictureColor();
             drawCanvas_Color.GetComponent<SpriteRenderer>().material = M_picture;
@@ -276,6 +286,8 @@ public class UIManager : MonoBehaviour
             InitSelectTitleUI();
 
             animatorDraw.SetTrigger("Draw_Title");
+            // 마우스 클릭 이벤트
+            AudioManager.instance.PlaySE("Brushing");
 
             canvaseTitles[0].SetActive(true);
             canvaseTitles[0].GetComponent<Text>().text = "Title: <" + curTitle + ">";

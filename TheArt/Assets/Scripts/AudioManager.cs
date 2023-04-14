@@ -39,12 +39,15 @@ public class AudioManager : MonoBehaviour
     public string currentBGM;
 
     // 오디오 소리 On/Off 체크 변수
+    public bool isSFXPlay;
     public bool isAudioPlay;
 
     void Start()
     {
         isAudioPlay = true;
+        isSFXPlay = true;
         audioSourceBgm.volume = 0.5f;
+        SetSFXVolume(0.5f);
         playSoundName = new string[audioSourceEffects.Length];
     }
 
@@ -55,10 +58,12 @@ public class AudioManager : MonoBehaviour
     }
     public void SetMusicMute()
     {
+        isAudioPlay = false;
         audioSourceBgm.mute = true;
     }
     public void SetMusicPlay()
     {
+        isAudioPlay = true;
         audioSourceBgm.mute = false;
     }
     public void SetSFXVolume(float vol)
@@ -70,6 +75,7 @@ public class AudioManager : MonoBehaviour
     }
     public void SetSFXMute()
     {
+        isSFXPlay = false;
         for (int i = 0; i < audioSourceEffects.Length; i++)
         {
             audioSourceEffects[i].mute = true;
@@ -77,6 +83,7 @@ public class AudioManager : MonoBehaviour
     }
     public void SetSFXPlay()
     {
+        isSFXPlay = true;
         for (int i = 0; i < audioSourceEffects.Length; i++)
         {
             audioSourceEffects[i].mute = false;
