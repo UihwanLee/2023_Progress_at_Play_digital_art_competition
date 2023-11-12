@@ -10,6 +10,7 @@
  
 > 다운로드
   *  [게임 다운로드](https://drive.google.com/file/d/1ibwVE0JYuLxQImCjnmh4OJIjYA8taOsZ/view?usp=sharing)
+  *  [게임 플레이영상](https://youtu.be/yuGpM5CyhwY?si=zpCvIYqJc5NLS3uM)
 
 > 게임 사진
 
